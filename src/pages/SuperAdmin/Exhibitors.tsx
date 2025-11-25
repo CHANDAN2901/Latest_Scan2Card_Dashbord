@@ -200,6 +200,24 @@ const SuperAdminExhibitors = () => {
     }
   };
 
+  // Only SUPERADMIN can change payment status
+  const handlePaymentStatusChange = async (key: LicenseKey, newStatus: "pending" | "completed") => {
+    try {
+      setError('');
+      await exhibitorAPI.updateKeyPaymentStatus(key.eventId, key._id, newStatus);
+
+      // Update local state
+      setExhibitorKeys(exhibitorKeys.map(k =>
+        k._id === key._id ? { ...k, paymentStatus: newStatus } : k
+      ));
+
+      setSuccess(`Payment status updated to ${newStatus}`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update payment status');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -888,6 +906,7 @@ const SuperAdminExhibitors = () => {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -946,6 +965,20 @@ const SuperAdminExhibitors = () => {
                               >
                                 {key.isActive && new Date(key.expiresAt) > new Date() ? 'Active' : 'Expired'}
                               </span>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <select
+                                value={key.paymentStatus}
+                                onChange={(e) => handlePaymentStatusChange(key, e.target.value as "pending" | "completed")}
+                                className={`text-xs font-medium px-3 py-1 rounded-lg border-2 transition-colors cursor-pointer ${
+                                  key.paymentStatus === 'completed'
+                                    ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                                    : 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
+                                }`}
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                              </select>
                             </td>
                           </tr>
                         ))}

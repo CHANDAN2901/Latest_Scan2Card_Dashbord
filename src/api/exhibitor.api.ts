@@ -45,9 +45,12 @@ export interface LicenseKey {
   usedCount: number;
   isActive: boolean;
   expiresAt: string;
+  paymentStatus: "pending" | "completed";
   eventName: string;
   eventId: string;
   usagePercentage: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ExhibitorKeysResponse {
@@ -193,6 +196,25 @@ export const exhibitorAPI = {
     } catch (error: any) {
       if (error.response?.data) {
         throw new Error(error.response.data.message || 'Failed to fetch exhibitor keys');
+      }
+      throw error;
+    }
+  },
+
+  // Only accessible by SUPERADMIN
+  updateKeyPaymentStatus: async (
+    eventId: string,
+    keyId: string,
+    paymentStatus: "pending" | "completed"
+  ): Promise<{ success: boolean; message: string; data: any }> => {
+    try {
+      const response = await apiClient.put(`/admin/events/${eventId}/keys/${keyId}/payment-status`, {
+        paymentStatus,
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || 'Failed to update payment status');
       }
       throw error;
     }
