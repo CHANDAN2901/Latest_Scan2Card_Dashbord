@@ -25,9 +25,11 @@ export interface Lead {
     endDate: string;
   };
   isIndependentLead: boolean;
-  scannedCardImage: string;
+  leadType: "full_scan" | "entry_code" | "manual";
+  scannedCardImage?: string;
+  entryCode?: string;
   ocrText?: string;
-  details: LeadDetails;
+  details?: LeadDetails;
   rating?: number;
   isActive: boolean;
   isDeleted: boolean;
@@ -38,7 +40,9 @@ export interface Lead {
 export interface CreateLeadData {
   eventId?: string;
   isIndependentLead?: boolean;
-  scannedCardImage: string;
+  leadType?: "full_scan" | "entry_code" | "manual";
+  scannedCardImage?: string;
+  entryCode?: string;
   ocrText?: string;
   details?: LeadDetails;
   rating?: number;
@@ -47,7 +51,9 @@ export interface CreateLeadData {
 export interface UpdateLeadData {
   eventId?: string;
   isIndependentLead?: boolean;
+  leadType?: "full_scan" | "entry_code" | "manual";
   scannedCardImage?: string;
+  entryCode?: string;
   ocrText?: string;
   details?: LeadDetails;
   rating?: number;
@@ -86,12 +92,14 @@ export interface ScanCardResponse {
 export interface ScanQRResponse {
   success: boolean;
   message?: string;
+  leadType?: "full_scan" | "entry_code" | "manual";
   data?: {
-    details: LeadDetails;
+    details?: LeadDetails;
+    entryCode?: string;
     rawData: string;
     confidence: number;
   };
-  type?: 'url' | 'vcard' | 'plaintext';
+  type?: 'url' | 'vcard' | 'plaintext' | 'entry_code';
   confidence?: number;
 }
 

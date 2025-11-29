@@ -28,6 +28,7 @@ const EndUserLeads = () => {
   const [formData, setFormData] = useState<CreateLeadData>({
     scannedCardImage: '',
     ocrText: '',
+    entryCode: '',
     eventId: undefined,
     details: {
       firstName: '',
@@ -101,6 +102,7 @@ const EndUserLeads = () => {
         details: formData.details,
         rating: formData.rating,
         ocrText: formData.ocrText,
+        entryCode: formData.entryCode,
       };
       await leadApi.update(selectedLead._id, updateData);
       setShowEditModal(false);
@@ -185,16 +187,21 @@ const EndUserLeads = () => {
       const response = await leadApi.scanQRCode(qrText);
 
       if (response.data) {
-        setFormData({
+        const updatedFormData = {
           ...formData,
-          // If the QR code provides a raw string (like a vCard), we might want to store it in ocrText or notes
-          // For now, we'll assume the API returns structured details similar to card scan
           ocrText: response.data.rawData || qrText,
           details: {
             ...formData.details,
             ...response.data.details,
           },
-        });
+        };
+
+        // If QR scan returns only a code (no structured data), populate entryCode
+        if (response.type === 'entry_code' || (!response.data.details || Object.keys(response.data.details).length === 0)) {
+          updatedFormData.entryCode = response.data.entryCode || qrText;
+        }
+
+        setFormData(updatedFormData);
         setConfidence(response.data.confidence || 1.0);
       }
     } catch (error: any) {
@@ -277,6 +284,7 @@ const EndUserLeads = () => {
     setFormData({
       scannedCardImage: '',
       ocrText: '',
+      entryCode: '',
       details: {
         firstName: '',
         lastName: '',
@@ -304,6 +312,7 @@ const EndUserLeads = () => {
     setFormData({
       scannedCardImage: lead.scannedCardImage,
       ocrText: lead.ocrText || '',
+      entryCode: lead.entryCode || '',
       details: lead.details,
       rating: lead.rating,
       isIndependentLead: lead.isIndependentLead,
@@ -399,6 +408,7 @@ const EndUserLeads = () => {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rating</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Entry Code</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Event</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
                     <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
@@ -410,19 +420,28 @@ const EndUserLeads = () => {
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-medium text-gray-900">
-                            {lead.details.firstName} {lead.details.lastName}
+                            {lead.details?.firstName || ''} {lead.details?.lastName || ''}
                           </p>
-                          <p className="text-sm text-gray-600">{lead.details.position}</p>
+                          <p className="text-sm text-gray-600">{lead.details?.position || ''}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{lead.details.company || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{lead.details?.company || '-'}</td>
                       <td className="px-6 py-4">
                         <div className="text-sm">
-                          <p className="text-gray-900">{lead.details.email || '-'}</p>
-                          <p className="text-gray-600">{lead.details.phoneNumber || '-'}</p>
+                          <p className="text-gray-900">{lead.details?.email || '-'}</p>
+                          <p className="text-gray-600">{lead.details?.phoneNumber || '-'}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4">{getRatingStars(lead.rating)}</td>
+                      <td className="px-6 py-4">
+                        {lead.entryCode ? (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 font-mono">
+                            {lead.entryCode}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         {lead.eventId ? (
                           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
@@ -752,6 +771,19 @@ const EndUserLeads = () => {
                   </select>
                 </div>
 
+                {showEditModal && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Entry Code</label>
+                    <input
+                      type="text"
+                      value={formData.entryCode}
+                      onChange={(e) => setFormData({ ...formData, entryCode: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent font-mono"
+                      placeholder="Entry code"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                   <textarea
@@ -763,23 +795,40 @@ const EndUserLeads = () => {
                 </div>
 
                 {showCreateModal && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Card Image URL {formData.scannedCardImage && <span className="text-green-600">(Populated from scan)</span>}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.scannedCardImage}
-                      onChange={(e) => setFormData({ ...formData, scannedCardImage: e.target.value })}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
-                      placeholder="Scan a card above or enter image URL"
-                      readOnly={!!formData.scannedCardImage}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      This field is automatically filled when you scan a business card
-                    </p>
-                  </div>
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Entry Code {formData.entryCode && <span className="text-green-600">(Auto-filled from QR scan)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.entryCode}
+                        onChange={(e) => setFormData({ ...formData, entryCode: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent font-mono"
+                        placeholder="Entry code from QR scan"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        This field is automatically filled when you scan a QR code that contains only an entry code
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Card Image URL {formData.scannedCardImage && <span className="text-green-600">(Auto-filled from scan - editable)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.scannedCardImage}
+                        onChange={(e) => setFormData({ ...formData, scannedCardImage: e.target.value })}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                        placeholder="Scan a card above or enter image URL"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        This field is automatically filled when you scan a business card, but you can manually edit it
+                      </p>
+                    </div>
+                  </>
                 )}
 
                 <div className="flex gap-3 pt-4">
@@ -815,7 +864,7 @@ const EndUserLeads = () => {
               <p className="text-gray-600 mb-6">
                 Are you sure you want to delete the lead for{' '}
                 <strong>
-                  {selectedLead.details.firstName} {selectedLead.details.lastName}
+                  {selectedLead.details?.firstName || ''} {selectedLead.details?.lastName || ''}
                 </strong>
                 ? This action cannot be undone.
               </p>

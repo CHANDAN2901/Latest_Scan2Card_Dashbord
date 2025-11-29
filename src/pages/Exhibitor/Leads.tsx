@@ -76,9 +76,25 @@ const ExhibitorLeads = () => {
           </div>
         )}
 
-        <div className="mb-6 lg:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Leads</h1>
-          <p className="text-gray-600 mt-1">View and manage all captured leads</p>
+        <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Leads</h1>
+            <p className="text-gray-600 mt-1">View and manage all captured leads</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              className="px-4 py-2 bg-[#8C00FF] hover:bg-[#7A00E6] text-white rounded-lg text-sm font-medium transition-colors"
+              onClick={() => console.log('Export with all data clicked')}
+            >
+              Export with All Data
+            </button>
+            <button
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors"
+              onClick={() => console.log('Export entry key only clicked')}
+            >
+              Export Entry Key Only
+            </button>
+          </div>
         </div>
 
         {/* Leads Table */}
@@ -124,6 +140,7 @@ const ExhibitorLeads = () => {
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Company</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Email</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Phone</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Entry Code</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Event</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Captured</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Rating</th>
@@ -133,18 +150,27 @@ const ExhibitorLeads = () => {
                     {leads.map((lead) => (
                       <tr key={lead._id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-4 text-sm text-gray-900">
-                          {lead.details.firstName || lead.details.lastName 
-                            ? `${lead.details.firstName || ''} ${lead.details.lastName || ''}`.trim()
+                          {lead.details?.firstName || lead.details?.lastName 
+                            ? `${lead.details?.firstName || ''} ${lead.details?.lastName || ''}`.trim()
                             : '-'}
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-900">
-                          {lead.details.company || '-'}
+                          {lead.details?.company || '-'}
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
-                          {lead.details.email || '-'}
+                          {lead.details?.email || '-'}
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
-                          {lead.details.phoneNumber || '-'}
+                          {lead.details?.phoneNumber || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {lead.entryCode ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 font-mono">
+                              {lead.entryCode}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
                           {lead.eventId && typeof lead.eventId === 'object' 
