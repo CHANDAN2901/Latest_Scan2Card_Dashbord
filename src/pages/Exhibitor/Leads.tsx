@@ -10,8 +10,10 @@ const ExhibitorLeads = () => {
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [filterRating, setFilterRating] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -52,6 +54,9 @@ const ExhibitorLeads = () => {
         if (debouncedSearch) {
           params.search = debouncedSearch;
         }
+        if (filterRating) {
+          params.rating = filterRating;
+        }
         
         const response = await leadApi.getAll(params);
         // leadApi.getAll returns { leads: Lead[], pagination: any }
@@ -65,7 +70,42 @@ const ExhibitorLeads = () => {
     };
 
     fetchLeads();
-  }, [selectedEventId, debouncedSearch]);
+  }, [selectedEventId, debouncedSearch, filterRating]);
+
+  // Export functions
+  const handleExportAllData = async () => {
+    try {
+      setExportLoading(true);
+      await leadApi.exportLeads({
+        type: 'all',
+        eventId: selectedEventId || undefined,
+        search: debouncedSearch || undefined,
+        rating: filterRating,
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      setError('Failed to export leads data');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleExportEntryOnly = async () => {
+    try {
+      setExportLoading(true);
+      await leadApi.exportLeads({
+        type: 'entryOnly',
+        eventId: selectedEventId || undefined,
+        search: debouncedSearch || undefined,
+        rating: filterRating,
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      setError('Failed to export entry codes');
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -83,16 +123,18 @@ const ExhibitorLeads = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              className="px-4 py-2 bg-[#8C00FF] hover:bg-[#7A00E6] text-white rounded-lg text-sm font-medium transition-colors"
-              onClick={() => console.log('Export with all data clicked')}
+              className="px-4 py-2 bg-[#8C00FF] hover:bg-[#7A00E6] disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
+              onClick={handleExportAllData}
+              disabled={exportLoading}
             >
-              Export with All Data
+              {exportLoading ? 'Exporting...' : 'Export with All Data'}
             </button>
             <button
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors"
-              onClick={() => console.log('Export entry key only clicked')}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
+              onClick={handleExportEntryOnly}
+              disabled={exportLoading}
             >
-              Export Entry Key Only
+              {exportLoading ? 'Exporting...' : 'Export Entry Key Only'}
             </button>
           </div>
         </div>
@@ -121,6 +163,18 @@ const ExhibitorLeads = () => {
                     {event.eventName}
                   </option>
                 ))}
+              </select>
+              <select
+                value={filterRating || ''}
+                onChange={(e) => setFilterRating(e.target.value ? parseInt(e.target.value) : undefined)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+              >
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
               </select>
             </div>
           </CardHeader>

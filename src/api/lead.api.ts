@@ -154,6 +154,40 @@ const leadApi = {
     const response = await axios.get('/leads/stats');
     return response.data.data;
   },
+
+  // Export leads as CSV
+  exportLeads: async (params: {
+    type: 'all' | 'entryOnly';
+    eventId?: string;
+    search?: string;
+    rating?: number;
+  }): Promise<void> => {
+    const response = await axios.get('/leads/export', {
+      params,
+      responseType: 'blob', // Important for file download
+    });
+
+    // Create blob link to download
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+
+    // Get filename from response headers
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = `leads-export-${new Date().toISOString().split('T')[0]}.csv`;
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
 };
 
 export default leadApi;
