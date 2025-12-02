@@ -12,15 +12,14 @@ const EndUserMeetings = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null);
   
-  // Form state
-  const [formData, setFormData] = useState<CreateMeetingData>({
+  // Form state (using local datetime strings for input)
+  const [formData, setFormData] = useState({
     leadId: '',
     title: '',
     description: '',
-    meetingMode: 'online',
-    date: '',
-    startTime: '',
-    endTime: '',
+    meetingMode: 'online' as 'online' | 'offline' | 'phone',
+    startAt: '', // Local datetime string for input
+    endAt: '', // Local datetime string for input
     location: '',
     notifyAttendees: false,
   });
@@ -53,23 +52,47 @@ const EndUserMeetings = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate that startAt is before endAt
+    const startDate = new Date(formData.startAt);
+    const endDate = new Date(formData.endAt);
+
+    if (startDate >= endDate) {
+      setError('Start time must be before end time');
+      return;
+    }
+
     try {
       setLoading(true);
+      setError('');
+
+      // Convert local datetime to UTC ISO string
+      const meetingData: CreateMeetingData = {
+        leadId: formData.leadId,
+        title: formData.title,
+        description: formData.description,
+        meetingMode: formData.meetingMode,
+        startAt: startDate.toISOString(),
+        endAt: endDate.toISOString(),
+        location: formData.location,
+        notifyAttendees: formData.notifyAttendees,
+      };
+
       if (editingMeetingId) {
-        await meetingApi.update(editingMeetingId, formData);
+        await meetingApi.update(editingMeetingId, meetingData);
         setEditingMeetingId(null);
       } else {
-        await meetingApi.create(formData);
+        await meetingApi.create(meetingData);
       }
+
       setShowCreateForm(false);
       setFormData({
         leadId: '',
         title: '',
         description: '',
         meetingMode: 'online',
-        date: '',
-        startTime: '',
-        endTime: '',
+        startAt: '',
+        endAt: '',
         location: '',
         notifyAttendees: false,
       });
@@ -82,14 +105,27 @@ const EndUserMeetings = () => {
   };
 
   const handleEdit = (meeting: MeetingData) => {
+    // Convert UTC timestamps to local datetime string for input
+    const startDate = new Date(meeting.startAt);
+    const endDate = new Date(meeting.endAt);
+
+    // Format to 'YYYY-MM-DDTHH:MM' for datetime-local input
+    const formatDatetimeLocal = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
     setFormData({
       leadId: typeof meeting.leadId === 'string' ? meeting.leadId : meeting.leadId._id,
       title: meeting.title,
       description: meeting.description || '',
       meetingMode: meeting.meetingMode,
-      date: meeting.date.split('T')[0],
-      startTime: meeting.startTime,
-      endTime: meeting.endTime,
+      startAt: formatDatetimeLocal(startDate),
+      endAt: formatDatetimeLocal(endDate),
       location: meeting.location || '',
       notifyAttendees: false,
     });
@@ -101,14 +137,14 @@ const EndUserMeetings = () => {
   const handleCancelEdit = () => {
     setEditingMeetingId(null);
     setShowCreateForm(false);
+    setError('');
     setFormData({
       leadId: '',
       title: '',
       description: '',
       meetingMode: 'online',
-      date: '',
-      startTime: '',
-      endTime: '',
+      startAt: '',
+      endAt: '',
       location: '',
       notifyAttendees: false,
     });
@@ -207,9 +243,9 @@ const EndUserMeetings = () => {
                       <option value="">Select a lead</option>
                       {leads.map((lead) => (
                         <option key={lead._id} value={lead._id}>
-                          {lead.details.firstName || lead.details.lastName 
-                            ? `${lead.details.firstName || ''} ${lead.details.lastName || ''}`.trim()
-                            : lead.details.email || lead.details.company || 'Unknown'}
+                          {lead.details?.firstName || lead.details?.lastName
+                            ? `${lead.details?.firstName || ''} ${lead.details?.lastName || ''}`.trim()
+                            : lead.details?.email || lead.details?.company || 'Unknown'}
                         </option>
                       ))}
                     </select>
@@ -242,33 +278,22 @@ const EndUserMeetings = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time *</label>
                     <input
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      type="datetime-local"
+                      value={formData.startAt}
+                      onChange={(e) => setFormData({ ...formData, startAt: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date & Time *</label>
                     <input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Time *</label>
-                    <input
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                      type="datetime-local"
+                      value={formData.endAt}
+                      onChange={(e) => setFormData({ ...formData, endAt: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
                       required
                     />
@@ -350,8 +375,10 @@ const EndUserMeetings = () => {
                             : meeting.leadId?.details.email || '-'}
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
-                          <div>{new Date(meeting.date).toLocaleDateString()}</div>
-                          <div className="text-xs">{meeting.startTime} - {meeting.endTime}</div>
+                          <div>{new Date(meeting.startAt).toLocaleDateString()}</div>
+                          <div className="text-xs">
+                            {new Date(meeting.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2 text-sm text-gray-600">

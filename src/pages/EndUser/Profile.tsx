@@ -19,6 +19,10 @@ const EndUserProfile = () => {
     phoneNumber: '',
   });
 
+  // Profile image state
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   // Password form state
   const [passwordForm, setPasswordForm] = useState<ChangePasswordData>({
     currentPassword: '',
@@ -50,6 +54,10 @@ const EndUserProfile = () => {
         lastName: userData.lastName,
         phoneNumber: userData.phoneNumber || '',
       });
+      // Set initial image preview if user has profile image
+      if (userData.profileImage) {
+        setImagePreview(userData.profileImage);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load profile');
     }
@@ -64,14 +72,44 @@ const EndUserProfile = () => {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only image files (JPEG, PNG, GIF, WebP) are allowed');
+      return;
+    }
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image size must be less than 10MB');
+      return;
+    }
+
+    setSelectedImage(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
       setError('');
       setSuccessMessage('');
-      const updatedUser = await profileApi.updateProfile(profileForm);
+
+      // Pass both form data and image file
+      const updatedUser = await profileApi.updateProfile(profileForm, selectedImage);
       setUser(updatedUser);
+      setSelectedImage(null); // Reset selected image
       setSuccessMessage('Profile updated successfully!');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update profile');
@@ -196,10 +234,56 @@ const EndUserProfile = () => {
           <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your personal information</CardDescription>
+              <CardDescription>Update your personal information and profile picture</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
+                {/* Profile Image Upload Section */}
+                <div className="flex items-start gap-6 pb-6 border-b">
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+                      {imagePreview ? (
+                        <img
+                          src={imagePreview}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Profile Picture
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <label className="cursor-pointer bg-white px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span className="text-sm font-medium text-gray-700">Choose Image</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif,image/webp"
+                          onChange={handleImageSelect}
+                          className="hidden"
+                        />
+                      </label>
+                      {selectedImage && (
+                        <span className="text-sm text-green-600">
+                          ✓ New image selected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      JPG, PNG, GIF or WebP. Max size 10MB.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Profile Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
@@ -243,7 +327,7 @@ const EndUserProfile = () => {
                   </div>
 
                   {/* 2FA Toggle */}
-                  <div className="border-t pt-4 mt-4">
+                  <div className="md:col-span-2 border-t pt-4 mt-2">
                     <div className="flex items-center justify-between">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">

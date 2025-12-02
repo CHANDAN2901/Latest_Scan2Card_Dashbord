@@ -27,9 +27,8 @@ interface Meeting {
   title: string;
   meetingMode: string;
   meetingStatus: string;
-  date: string;
-  startTime: string;
-  endTime: string;
+  startAt: string; // ISO 8601 UTC timestamp
+  endAt: string; // ISO 8601 UTC timestamp
 }
 
 const TeamManagerMeetings: React.FC = () => {
@@ -100,10 +99,12 @@ const TeamManagerMeetings: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">{meeting.eventId?.eventName || '-'}</td>
                       <td className="px-6 py-4">{meeting.title}</td>
-                      <td className="px-6 py-4">{new Date(meeting.date).toLocaleDateString()}</td>
-                      <td className="px-6 py-4">{meeting.startTime} - {meeting.endTime}</td>
-                      <td className="px-6 py-4">{meeting.meetingMode}</td>
-                      <td className="px-6 py-4">{meeting.meetingStatus}</td>
+                      <td className="px-6 py-4">{new Date(meeting.startAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">
+                        {new Date(meeting.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(meeting.endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="px-6 py-4 capitalize">{meeting.meetingMode}</td>
+                      <td className="px-6 py-4 capitalize">{meeting.meetingStatus}</td>
                     </tr>
                   ))}
                 </tbody>

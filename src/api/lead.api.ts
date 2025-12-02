@@ -117,9 +117,16 @@ const leadApi = {
     return response.data;
   },
 
-  // Create a new lead
-  create: async (data: CreateLeadData): Promise<Lead> => {
-    const response = await axios.post('/leads', data);
+  // Create a new lead (supports FormData for image upload)
+  create: async (data: CreateLeadData | FormData): Promise<Lead> => {
+    let response;
+    if (data instanceof FormData) {
+      response = await axios.post('/leads', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    } else {
+      response = await axios.post('/leads', data);
+    }
     return response.data.data;
   },
 

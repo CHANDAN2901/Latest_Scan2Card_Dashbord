@@ -53,7 +53,25 @@ export interface SubmitFeedbackData {
 
 const profileApi = {
   // Update profile
-  updateProfile: async (data: UpdateProfileData) => {
+  // Now supports optional file upload for profile image
+  updateProfile: async (data: UpdateProfileData, profileImageFile?: File | null) => {
+    // If there's a file, send as FormData (multipart/form-data)
+    if (profileImageFile) {
+      const formData = new FormData();
+      formData.append('profileImage', profileImageFile);
+      if (data.firstName) formData.append('firstName', data.firstName);
+      if (data.lastName) formData.append('lastName', data.lastName);
+      if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
+
+      const response = await axiosInstance.put('/profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.data.user as UserProfile;
+    }
+
+    // Otherwise, send as JSON
     const response = await axiosInstance.put('/profile', data);
     return response.data.data.user as UserProfile;
   },

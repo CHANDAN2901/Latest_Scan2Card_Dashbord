@@ -21,9 +21,8 @@ export interface MeetingData {
   description?: string;
   meetingMode: 'online' | 'offline' | 'phone';
   meetingStatus: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
-  date: string;
-  startTime: string;
-  endTime: string;
+  startAt: string; // ISO 8601 UTC timestamp
+  endAt: string; // ISO 8601 UTC timestamp
   location?: string;
   notifyAttendees: boolean;
   isActive: boolean;
@@ -38,9 +37,8 @@ export interface CreateMeetingData {
   title: string;
   description?: string;
   meetingMode: 'online' | 'offline' | 'phone';
-  date: string;
-  startTime: string;
-  endTime: string;
+  startAt: string; // ISO 8601 UTC timestamp
+  endAt: string; // ISO 8601 UTC timestamp
   location?: string;
   notifyAttendees?: boolean;
 }
@@ -50,9 +48,8 @@ export interface UpdateMeetingData {
   description?: string;
   meetingMode?: 'online' | 'offline' | 'phone';
   meetingStatus?: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
-  date?: string;
-  startTime?: string;
-  endTime?: string;
+  startAt?: string; // ISO 8601 UTC timestamp
+  endAt?: string; // ISO 8601 UTC timestamp
   location?: string;
   notifyAttendees?: boolean;
   isActive?: boolean;

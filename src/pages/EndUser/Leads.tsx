@@ -46,6 +46,10 @@ const EndUserLeads = () => {
     rating: undefined,
     isIndependentLead: true,
   });
+  // Store scan card/QR image (only one allowed)
+  const [scanImage, setScanImage] = useState<File | null>(null);
+  // Store up to 2 extra images
+  const [extraImages, setExtraImages] = useState<File[]>([]);
 
   useEffect(() => {
     fetchLeads();
@@ -85,7 +89,19 @@ const EndUserLeads = () => {
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await leadApi.create(formData);
+      const fd = new FormData();
+      // Always put scanImage first (if present), then extraImages
+      if (scanImage) fd.append('images', scanImage);
+      extraImages.forEach((file) => {
+        fd.append('images', file);
+      });
+      fd.append('details', JSON.stringify(formData.details));
+      if (formData.eventId) fd.append('eventId', formData.eventId);
+      if (formData.rating !== undefined) fd.append('rating', String(formData.rating));
+      if (formData.ocrText) fd.append('ocrText', formData.ocrText);
+      if (formData.entryCode) fd.append('entryCode', formData.entryCode);
+      if (formData.isIndependentLead !== undefined) fd.append('isIndependentLead', String(formData.isIndependentLead));
+      await leadApi.create(fd);
       setShowCreateModal(false);
       resetForm();
       fetchLeads();
@@ -126,29 +142,43 @@ const EndUserLeads = () => {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle scan card/QR image upload (only one allowed)
+  const handleScanImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Check file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       setScanError('Please upload a valid image file (JPEG, PNG, or WebP)');
       return;
     }
-
-    // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       setScanError('Image size must be less than 10MB');
       return;
     }
-
+    setScanImage(file);
+    // For scan, still send base64 to backend for OCR
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64Image = event.target?.result as string;
       await handleScanCard(base64Image);
     };
     reader.readAsDataURL(file);
+  };
+
+  // Handle extra images upload (up to 2)
+  const handleExtraImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const filtered = files.filter(
+      (file) => validTypes.includes(file.type) && file.size <= 10 * 1024 * 1024
+    );
+    setExtraImages((prev) => {
+      const total = prev.length + filtered.length;
+      if (total > 2) {
+        return [...prev, ...filtered.slice(0, 2 - prev.length)];
+      }
+      return [...prev, ...filtered];
+    });
   };
 
   const handleScanCard = async (image: string) => {
@@ -301,6 +331,8 @@ const EndUserLeads = () => {
       rating: undefined,
       isIndependentLead: true,
     });
+    setScanImage(null);
+    setExtraImages([]);
     setScanning(false);
     setScanError(null);
     setConfidence(null);
@@ -550,22 +582,23 @@ const EndUserLeads = () => {
                       Upload a business card image to automatically extract contact information
                     </p>
 
+                    {/* Scan Card/QR Image Upload (only one allowed) */}
                     <div className="flex items-center gap-3">
                       <label className="flex-1">
                         <input
                           type="file"
                           accept="image/jpeg,image/jpg,image/png,image/webp"
-                          onChange={handleImageUpload}
-                          disabled={scanning}
+                          onChange={handleScanImageUpload}
+                          disabled={scanning || !!scanImage}
                           className="hidden"
                           id="card-upload"
                         />
-                        <div className="flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-500 cursor-pointer transition-colors">
+                        <div className={`flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-purple-300 rounded-lg ${!!scanImage ? 'opacity-50 cursor-not-allowed' : 'hover:border-purple-500 cursor-pointer'} transition-colors`}>
                           <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           <span className="text-sm font-medium text-gray-700">
-                            {scanning ? 'Scanning...' : 'Upload Image'}
+                            {scanning ? 'Scanning...' : (!!scanImage ? 'Image Selected' : 'Upload Image')}
                           </span>
                         </div>
                       </label>
@@ -573,7 +606,7 @@ const EndUserLeads = () => {
                       <button
                         type="button"
                         onClick={startCamera}
-                        disabled={scanning}
+                        disabled={scanning || !!scanImage}
                         className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -586,7 +619,7 @@ const EndUserLeads = () => {
                       <button
                         type="button"
                         onClick={() => setShowQRScanner(true)}
-                        disabled={scanning}
+                        disabled={scanning || !!scanImage}
                         className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -595,6 +628,30 @@ const EndUserLeads = () => {
                         <span className="text-sm font-medium">Scan QR</span>
                       </button>
                     </div>
+
+                    {/* Scan Card/QR Image Preview & Remove */}
+                    {scanImage && (
+                      <div className="mt-4 flex items-center gap-3">
+                        <div className="relative group">
+                          <img
+                            src={URL.createObjectURL(scanImage)}
+                            alt="Scan Card Preview"
+                            className="w-32 h-32 object-cover rounded-lg border border-purple-300 shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setScanImage(null)}
+                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-gray-700 hover:text-red-600 shadow group-hover:opacity-100 opacity-80"
+                            title="Remove image"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        <span className="text-xs text-gray-700">Scan Card/QR Image</span>
+                      </div>
+                    )}
 
                     {/* Scanning Progress */}
                     {scanning && (
@@ -633,6 +690,49 @@ const EndUserLeads = () => {
                     <p className="text-xs text-gray-500 mt-3">
                       Supported: JPEG, PNG, WebP (max 10MB)
                     </p>
+                  </div>
+                )}
+
+                {/* Extra Images Section (up to 2) */}
+                {showCreateModal && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-9 4h10a1 1 0 001-1v-2a1 1 0 00-1-1H6a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                      <h3 className="text-sm font-semibold text-blue-900">Extra Images (Optional, up to 2)</h3>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      onChange={handleExtraImagesUpload}
+                      disabled={extraImages.length >= 2}
+                      className="mb-2"
+                    />
+                    {extraImages.length > 0 && (
+                      <div className="mt-2 flex gap-3 flex-wrap">
+                        {extraImages.map((file, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Extra Image ${idx + 1}`}
+                              className="w-20 h-20 object-cover rounded-lg border border-blue-300 shadow-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setExtraImages(extraImages.filter((_, i) => i !== idx))}
+                              className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-gray-700 hover:text-red-600 shadow group-hover:opacity-100 opacity-80"
+                              title="Remove image"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
