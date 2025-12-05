@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import QRScanner from '../../components/QRScanner';
 import leadApi, { type Lead, type CreateLeadData, type UpdateLeadData } from '../../api/lead.api';
+import { Button } from '@/components/ui/button';
 import rsvpApi, { type Rsvp } from '../../api/rsvp.api';
 
 const EndUserLeads = () => {
@@ -374,12 +375,9 @@ const EndUserLeads = () => {
             <h1 className="text-3xl font-bold text-gray-900">My Leads</h1>
             <p className="text-gray-600 mt-1">Manage your collected business contacts</p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-6 py-3 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg font-semibold transition-colors"
-          >
+          <Button onClick={() => setShowCreateModal(true)}>
             + Add Lead
-          </button>
+          </Button>
         </div>
 
         {/* Filters */}
@@ -390,13 +388,13 @@ const EndUserLeads = () => {
               placeholder="Search by name, company, email, phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
             />
           </div>
           <select
             value={filterRating || ''}
             onChange={(e) => setFilterRating(e.target.value ? parseInt(e.target.value) : undefined)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
           >
             <option value="">All Ratings</option>
             <option value="5">5 Stars</option>
@@ -410,7 +408,7 @@ const EndUserLeads = () => {
         {/* Leads Table */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9929EA]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#854AE6]"></div>
           </div>
         ) : leads.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
@@ -419,12 +417,9 @@ const EndUserLeads = () => {
             </svg>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No leads found</h3>
             <p className="text-gray-600 mb-4">Start adding leads to build your network</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-6 py-2 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg font-semibold transition-colors"
-            >
+            <Button onClick={() => setShowCreateModal(true)}>
               Add Your First Lead
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -463,7 +458,7 @@ const EndUserLeads = () => {
                       <td className="px-6 py-4">{getRatingStars(lead.rating)}</td>
                       <td className="px-6 py-4">
                         {lead.entryCode ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 font-mono">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#F4ECFF] text-[#5E2AB2] border border-[#E3D4FF] font-mono">
                             {lead.entryCode}
                           </span>
                         ) : (
@@ -486,27 +481,33 @@ const EndUserLeads = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
-                          <button
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openEditModal(lead)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="text-blue-600 hover:bg-blue-50"
                             title="Edit"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => {
                               setSelectedLead(lead);
                               setShowDeleteConfirm(true);
                             }}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="text-red-600 hover:bg-red-50"
                             title="Delete"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -518,23 +519,25 @@ const EndUserLeads = () => {
             {/* Pagination */}
             {pagination.totalPages > 1 && (
               <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setPagination((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
                   disabled={pagination.page === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
-                </button>
+                </Button>
                 <span className="text-sm text-gray-700">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setPagination((prev) => ({ ...prev, page: Math.min(prev.totalPages, prev.page + 1) }))}
                   disabled={pagination.page === pagination.totalPages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -548,7 +551,10 @@ const EndUserLeads = () => {
                 <h2 className="text-xl font-bold text-gray-900">
                   {showCreateModal ? 'Add New Lead' : 'Edit Lead'}
                 </h2>
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => {
                     setShowCreateModal(false);
                     setShowEditModal(false);
@@ -560,15 +566,15 @@ const EndUserLeads = () => {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </Button>
               </div>
 
               <form onSubmit={showCreateModal ? handleCreateLead : handleUpdateLead} className="p-6 space-y-4">
                 {/* Business Card Scanning Section - Only show in create modal */}
                 {showCreateModal && (
-                  <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                  <div className="mb-6 p-4 bg-gradient-to-r from-[#F4ECFF] to-[#EAF2FF] rounded-lg border border-[#E3D4FF]">
                     <div className="flex items-center gap-2 mb-3">
-                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-[#6F33C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -589,8 +595,8 @@ const EndUserLeads = () => {
                           className="hidden"
                           id="card-upload"
                         />
-                        <div className={`flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-purple-300 rounded-lg ${!!scanImage ? 'opacity-50 cursor-not-allowed' : 'hover:border-purple-500 cursor-pointer'} transition-colors`}>
-                          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className={`flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-[#D3BCFF] rounded-lg ${!!scanImage ? 'opacity-50 cursor-not-allowed' : 'hover:border-[#854AE6] cursor-pointer'} transition-colors`}>
+                          <svg className="w-5 h-5 text-[#6F33C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           <span className="text-sm font-medium text-gray-700">
@@ -599,30 +605,29 @@ const EndUserLeads = () => {
                         </div>
                       </label>
 
-                      <button
+                      <Button
                         type="button"
                         onClick={startCamera}
                         disabled={scanning || !!scanImage}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <span className="text-sm font-medium">Take Photo</span>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setShowQRScanner(true)}
                         disabled={scanning || !!scanImage}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-teal-500 hover:bg-teal-600"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                         </svg>
                         <span className="text-sm font-medium">Scan QR</span>
-                      </button>
+                      </Button>
                     </div>
 
                     {/* Scan Card/QR Image Preview & Remove */}
@@ -632,18 +637,20 @@ const EndUserLeads = () => {
                           <img
                             src={URL.createObjectURL(scanImage)}
                             alt="Scan Card Preview"
-                            className="w-32 h-32 object-cover rounded-lg border border-purple-300 shadow-sm"
+                            className="w-32 h-32 object-cover rounded-lg border border-[#D3BCFF] shadow-sm"
                           />
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setScanImage(null)}
-                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-gray-700 hover:text-red-600 shadow group-hover:opacity-100 opacity-80"
+                            className="absolute top-1 right-1 bg-white/80 text-gray-700 hover:text-red-600 shadow group-hover:opacity-100 opacity-80"
                             title="Remove image"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                         <span className="text-xs text-gray-700">Scan Card/QR Image</span>
                       </div>
@@ -651,8 +658,8 @@ const EndUserLeads = () => {
 
                     {/* Scanning Progress */}
                     {scanning && (
-                      <div className="mt-3 flex items-center gap-2 text-sm text-purple-700">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-700"></div>
+                      <div className="mt-3 flex items-center gap-2 text-sm text-[#5E2AB2]">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#6F33C5]"></div>
                         <span>Analyzing business card with AI...</span>
                       </div>
                     )}
@@ -715,16 +722,18 @@ const EndUserLeads = () => {
                               alt={`Extra Image ${idx + 1}`}
                               className="w-20 h-20 object-cover rounded-lg border border-blue-300 shadow-sm"
                             />
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => setExtraImages(extraImages.filter((_, i) => i !== idx))}
-                              className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-gray-700 hover:text-red-600 shadow group-hover:opacity-100 opacity-80"
+                              className="absolute top-1 right-1 bg-white/80 text-gray-700 hover:text-red-600 shadow group-hover:opacity-100 opacity-80"
                               title="Remove image"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -739,7 +748,7 @@ const EndUserLeads = () => {
                       type="text"
                       value={formData.details?.firstName || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, firstName: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -748,7 +757,7 @@ const EndUserLeads = () => {
                       type="text"
                       value={formData.details?.lastName || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, lastName: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -760,7 +769,7 @@ const EndUserLeads = () => {
                       type="text"
                       value={formData.details?.company || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, company: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -769,7 +778,7 @@ const EndUserLeads = () => {
                       type="text"
                       value={formData.details?.position || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, position: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -781,7 +790,7 @@ const EndUserLeads = () => {
                       type="email"
                       value={formData.details?.email || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, email: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -790,7 +799,7 @@ const EndUserLeads = () => {
                       type="tel"
                       value={formData.details?.phoneNumber || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, phoneNumber: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -801,7 +810,7 @@ const EndUserLeads = () => {
                     type="url"
                     value={formData.details?.website || ''}
                     onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, website: e.target.value } })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                   />
                 </div>
 
@@ -812,7 +821,7 @@ const EndUserLeads = () => {
                       type="text"
                       value={formData.details?.city || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, city: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -821,7 +830,7 @@ const EndUserLeads = () => {
                       type="text"
                       value={formData.details?.country || ''}
                       onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, country: e.target.value } })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -839,7 +848,7 @@ const EndUserLeads = () => {
                         isIndependentLead: !e.target.value
                       })}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                     >
                       <option value="">Select an event</option>
                       {availableEvents.map((rsvp) => (
@@ -856,7 +865,7 @@ const EndUserLeads = () => {
                   <select
                     value={formData.rating || ''}
                     onChange={(e) => setFormData({ ...formData, rating: e.target.value ? parseInt(e.target.value) : undefined })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                   >
                     <option value="">No Rating</option>
                     <option value="5">5 Stars</option>
@@ -874,7 +883,7 @@ const EndUserLeads = () => {
                       type="text"
                       value={formData.entryCode}
                       onChange={(e) => setFormData({ ...formData, entryCode: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent font-mono"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent font-mono"
                       placeholder="Entry code"
                     />
                   </div>
@@ -886,7 +895,7 @@ const EndUserLeads = () => {
                     value={formData.details?.notes || ''}
                     onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, notes: e.target.value } })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                   />
                 </div>
 
@@ -900,7 +909,7 @@ const EndUserLeads = () => {
                         type="text"
                         value={formData.entryCode}
                         onChange={(e) => setFormData({ ...formData, entryCode: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent font-mono"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent font-mono"
                         placeholder="Entry code from QR scan"
                       />
                       <p className="text-xs text-gray-500 mt-1">
@@ -911,24 +920,22 @@ const EndUserLeads = () => {
                 )}
 
                 <div className="flex gap-3 pt-4">
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg font-semibold transition-colors"
-                  >
+                  <Button type="submit" className="flex-1">
                     {showCreateModal ? 'Add Lead' : 'Update Lead'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="secondary"
+                    className="flex-1"
                     onClick={() => {
                       setShowCreateModal(false);
                       setShowEditModal(false);
                       setSelectedLead(null);
                       resetForm();
                     }}
-                    className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors"
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -948,21 +955,24 @@ const EndUserLeads = () => {
                 ? This action cannot be undone.
               </p>
               <div className="flex gap-3">
-                <button
+                <Button
+                  variant="danger"
+                  className="flex-1"
                   onClick={handleDeleteLead}
-                  className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
                 >
                   Delete
-                </button>
-                <button
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="flex-1"
                   onClick={() => {
                     setShowDeleteConfirm(false);
                     setSelectedLead(null);
                   }}
-                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -981,7 +991,7 @@ const EndUserLeads = () => {
           <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60] p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between">
+              <div className="bg-gradient-to-r from-[#854AE6] to-blue-600 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -989,14 +999,17 @@ const EndUserLeads = () => {
                   </svg>
                   <h3 className="text-xl font-bold text-white">Capture Business Card</h3>
                 </div>
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={stopCamera}
-                  className="text-white hover:text-gray-200 transition-colors"
+                  className="text-white hover:text-gray-200"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </Button>
               </div>
 
               {/* Camera Preview */}
@@ -1021,21 +1034,23 @@ const EndUserLeads = () => {
 
               {/* Controls */}
               <div className="p-6 bg-gray-50 flex items-center justify-center gap-4">
-                <button
+                <Button
+                  type="button"
+                  variant="secondary"
                   onClick={stopCamera}
-                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  type="button"
                   onClick={capturePhoto}
-                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
+                  className="px-8 bg-gradient-to-r from-[#854AE6] to-blue-600 hover:from-[#6F33C5] hover:to-blue-700 text-white shadow-lg transition-all transform hover:scale-105"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                   </svg>
                   Capture Photo
-                </button>
+                </Button>
               </div>
             </div>
           </div>

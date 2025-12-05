@@ -130,15 +130,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#9929EA] flex flex-col transform transition-transform duration-300 ease-in-out ${
+      <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#854AE6] flex flex-col transform transition-transform duration-300 ease-in-out ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-purple-600">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-[#854AE6]">
           <h1 className="text-xl font-bold text-white">Scan2Card</h1>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden text-white hover:bg-purple-700 p-2 rounded-lg"
+            className="lg:hidden text-white hover:bg-[#6F33C5] p-2 rounded-lg"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -154,8 +154,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               onClick={() => handleMenuClick(item.path)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                 isActive(item.path)
-                  ? 'bg-white text-[#9929EA]'
-                  : 'text-purple-100 hover:bg-purple-700 hover:text-white'
+                  ? 'bg-white text-[#854AE6]'
+                  : 'text-[#F2E9FF] hover:bg-[#6F33C5] hover:text-white'
               }`}
             >
               {item.icon}
@@ -165,19 +165,19 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </nav>
 
         {/* User Profile & Logout */}
-        <div className="border-t border-purple-600 p-4">
+        <div className="border-t border-[#854AE6] p-4">
           <div className="flex items-center gap-3 mb-3 px-2">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#9929EA] font-semibold">
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#854AE6] font-semibold">
               {user?.firstName?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{user?.firstName} {user?.lastName}</p>
-              <p className="text-xs text-purple-200 capitalize truncate">{user?.role.toLowerCase()}</p>
+              <p className="text-xs text-[#E3D4FF] capitalize truncate">{user?.role.toLowerCase()}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-lg text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#6F33C5] hover:bg-[#4B1F88] text-white rounded-lg text-sm font-medium transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

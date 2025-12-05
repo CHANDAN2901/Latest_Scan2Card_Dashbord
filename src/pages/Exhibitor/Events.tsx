@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import ConfirmModal from '../../components/ConfirmModal';
 import { eventAPI, type Event, type CreateEventData } from '../../api/event.api';
+import { Button } from '@/components/ui/button';
 
 const ExhibitorEvents = () => {
   const [showForm, setShowForm] = useState(false);
@@ -297,15 +298,16 @@ const ExhibitorEvents = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Events</h1>
             <p className="text-gray-600 mt-1">Create and manage your events</p>
           </div>
-          <button
+          <Button
+            type="button"
             onClick={() => setShowForm(!showForm)}
-            className="bg-[#9929EA] hover:bg-[#8820d0] text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
+            className="bg-[#854AE6] hover:bg-[#6F33C5] text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             {showForm ? 'Cancel' : 'Create Event'}
-          </button>
+          </Button>
         </div>
 
         {/* Create Event Form */}
@@ -325,7 +327,7 @@ const ExhibitorEvents = () => {
                     value={formData.eventName}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                     placeholder="Tech Conference 2025"
                   />
                 </div>
@@ -340,7 +342,7 @@ const ExhibitorEvents = () => {
                     value={formData.type}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                   >
                     <option value="Offline">Offline</option>
                     <option value="Online">Online</option>
@@ -359,7 +361,7 @@ const ExhibitorEvents = () => {
                     value={formData.startDate}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                   />
                 </div>
 
@@ -374,7 +376,7 @@ const ExhibitorEvents = () => {
                     value={formData.endDate}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                   />
                 </div>
 
@@ -388,7 +390,7 @@ const ExhibitorEvents = () => {
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                     placeholder="Brief description of the event"
                   />
                 </div>
@@ -403,7 +405,7 @@ const ExhibitorEvents = () => {
                     name="location.venue"
                     value={formData.location?.venue}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                     placeholder="Convention Center"
                   />
                 </div>
@@ -418,7 +420,7 @@ const ExhibitorEvents = () => {
                     name="location.city"
                     value={formData.location?.city}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                     placeholder="New York"
                   />
                 </div>
@@ -433,28 +435,29 @@ const ExhibitorEvents = () => {
                     name="location.address"
                     value={formData.location?.address}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                     placeholder="123 Main Street"
                   />
                 </div>
               </div>
 
               <div className="flex gap-3 mt-6 justify-end">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setShowForm(false)}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-6"
                   disabled={loading}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="px-6 py-2 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 bg-[#854AE6] hover:bg-[#6F33C5] text-white"
                   disabled={loading}
                 >
                   {loading ? 'Creating...' : 'Create Event'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -552,37 +555,46 @@ const ExhibitorEvents = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                          <button
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => {
                               setSelectedEvent(event);
                               setGeneratedLicenseKey('');
                               setShowLicenseModal(true);
                             }}
-                            className="text-[#9929EA] hover:text-[#8820d0] transition-colors"
+                            className="text-[#854AE6] hover:text-[#6F33C5]"
                             title="Generate License Key"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                             </svg>
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleEdit(event)}
-                            className="text-gray-600 hover:text-gray-900 transition-colors"
+                            className="text-gray-600 hover:text-gray-900"
                             title="Edit"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleDeleteClick(event._id)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-red-600 hover:text-red-800"
                             title="Delete"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -612,7 +624,7 @@ const ExhibitorEvents = () => {
                         value={editFormData.eventName}
                         onChange={handleEditInputChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
                     </div>
 
@@ -625,7 +637,7 @@ const ExhibitorEvents = () => {
                         value={editFormData.type}
                         onChange={handleEditInputChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       >
                         <option value="Offline">Offline</option>
                         <option value="Online">Online</option>
@@ -643,7 +655,7 @@ const ExhibitorEvents = () => {
                         value={editFormData.startDate}
                         onChange={handleEditInputChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
                     </div>
 
@@ -657,7 +669,7 @@ const ExhibitorEvents = () => {
                         value={editFormData.endDate}
                         onChange={handleEditInputChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
                     </div>
 
@@ -668,7 +680,7 @@ const ExhibitorEvents = () => {
                         value={editFormData.description}
                         onChange={handleEditInputChange}
                         rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
                     </div>
 
@@ -679,7 +691,7 @@ const ExhibitorEvents = () => {
                           name="isActive"
                           checked={editFormData.isActive}
                           onChange={handleEditInputChange}
-                          className="w-4 h-4 text-[#9929EA] border-gray-300 rounded focus:ring-[#9929EA]"
+                          className="w-4 h-4 text-[#854AE6] border-gray-300 rounded focus:ring-[#854AE6]"
                         />
                         <span className="text-sm font-medium text-gray-700">Active</span>
                       </label>
@@ -687,21 +699,22 @@ const ExhibitorEvents = () => {
                   </div>
 
                   <div className="flex gap-3 mt-6 justify-end">
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => setShowEditModal(false)}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="px-6"
                       disabled={loading}
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="submit"
-                      className="px-6 py-2 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg transition-colors disabled:opacity-50"
+                      className="px-6 bg-[#854AE6] hover:bg-[#6F33C5] text-white"
                       disabled={loading}
                     >
                       {loading ? 'Updating...' : 'Update Event'}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -716,12 +729,15 @@ const ExhibitorEvents = () => {
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-gray-900">Generate License Keys</h2>
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => setShowBulkUpload(!showBulkUpload)}
-                    className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="px-4 text-sm"
                   >
                     {showBulkUpload ? 'Single Key' : 'Bulk Upload'}
-                  </button>
+                  </Button>
                 </div>
               </div>
               
@@ -752,29 +768,30 @@ const ExhibitorEvents = () => {
                       <code className="flex-1 bg-white px-3 py-2 rounded border text-sm font-mono break-all">
                         {generatedLicenseKey}
                       </code>
-                      <button
+                      <Button
+                        type="button"
                         onClick={() => copyToClipboard(generatedLicenseKey)}
-                        className="px-3 py-2 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg transition-colors"
+                        className="px-3 py-2 bg-[#854AE6] hover:bg-[#6F33C5] text-white"
                         title="Copy"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
                   </div>
                   <div className="flex justify-end">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         setShowLicenseModal(false);
                         setGeneratedLicenseKey('');
                         setLicenseFormData({ stallName: '', email: '', maxActivations: 1, expiresAt: '' });
                       }}
-                      className="px-6 py-2 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg transition-colors"
+                      className="px-6 bg-[#854AE6] hover:bg-[#6F33C5] text-white"
                     >
                       Close
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : showBulkUpload ? (
@@ -786,12 +803,15 @@ const ExhibitorEvents = () => {
                       <br />
                       <span className="text-gray-500">Date format: YYYY-MM-DD (e.g., 2025-12-31)</span>
                     </p>
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={downloadSampleCsv}
-                      className="text-sm text-[#9929EA] hover:text-[#8820d0] font-medium"
+                      className="h-auto px-0 text-sm text-[#854AE6] hover:text-[#6F33C5] font-medium"
                     >
                       Download Sample CSV
-                    </button>
+                    </Button>
                   </div>
 
                   <div>
@@ -802,7 +822,7 @@ const ExhibitorEvents = () => {
                       type="file"
                       accept=".csv"
                       onChange={handleCsvUpload}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                     />
                     {csvFile && (
                       <p className="text-sm text-gray-600 mt-2">Selected: {csvFile.name}</p>
@@ -810,8 +830,9 @@ const ExhibitorEvents = () => {
                   </div>
 
                   <div className="flex gap-3 justify-end">
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => {
                         setShowLicenseModal(false);
                         setGeneratedLicenseKey('');
@@ -819,19 +840,19 @@ const ExhibitorEvents = () => {
                         setCsvFile(null);
                         setBulkUploadResults(null);
                       }}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="px-6"
                       disabled={loading}
                     >
                       Close
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={handleBulkUpload}
                       disabled={!csvFile || loading}
-                      className="px-6 py-2 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 bg-[#854AE6] hover:bg-[#6F33C5] text-white"
                     >
                       {loading ? 'Uploading...' : 'Upload & Generate'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -845,7 +866,7 @@ const ExhibitorEvents = () => {
                         type="email"
                         value={licenseFormData.email}
                         onChange={(e) => setLicenseFormData({ ...licenseFormData, email: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                         placeholder="manager@example.com"
                         required
                       />
@@ -860,7 +881,7 @@ const ExhibitorEvents = () => {
                         type="text"
                         value={licenseFormData.stallName}
                         onChange={(e) => setLicenseFormData({ ...licenseFormData, stallName: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                         placeholder="Stall A1"
                       />
                     </div>
@@ -874,7 +895,7 @@ const ExhibitorEvents = () => {
                         min="1"
                         value={licenseFormData.maxActivations}
                         onChange={(e) => setLicenseFormData({ ...licenseFormData, maxActivations: parseInt(e.target.value) })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
                       <p className="text-xs text-gray-500 mt-1">Number of employees who can use this key</p>
                     </div>
@@ -889,32 +910,33 @@ const ExhibitorEvents = () => {
                         min={new Date().toISOString().split('T')[0]}
                         value={licenseFormData.expiresAt}
                         onChange={(e) => setLicenseFormData({ ...licenseFormData, expiresAt: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent outline-none transition"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
                       <p className="text-xs text-gray-500 mt-1">Key will expire on this date</p>
                     </div>
                   </div>
 
                   <div className="flex gap-3 mt-6 justify-end">
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => {
                         setShowLicenseModal(false);
                         setGeneratedLicenseKey('');
                         setShowBulkUpload(false);
                       }}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="px-6"
                       disabled={loading}
                     >
                       Close
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="submit"
-                      className="px-6 py-2 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg transition-colors disabled:opacity-50"
+                      className="px-6 bg-[#854AE6] hover:bg-[#6F33C5] text-white"
                       disabled={loading}
                     >
                       {loading ? 'Generating...' : 'Generate'}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}
@@ -949,16 +971,19 @@ const ExhibitorEvents = () => {
             {/* Drawer */}
             <div className="fixed right-0 top-0 h-full w-full md:w-2/3 lg:w-1/2 bg-white shadow-2xl z-50 overflow-y-auto">
               {/* Header */}
-              <div className="sticky top-0 bg-gradient-to-r from-[#9929EA] to-[#8C00FF] px-6 py-5 flex justify-between items-center shadow-md">
+              <div className="sticky top-0 bg-gradient-to-r from-[#854AE6] to-[#854AE6] px-6 py-5 flex justify-between items-center shadow-md">
                 <h2 className="text-2xl font-bold text-white">Event Details</h2>
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowDetailsDrawer(false)}
-                  className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
+                  className="text-white hover:bg-white hover:bg-opacity-20"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </Button>
               </div>
 
               {/* Content */}
@@ -967,7 +992,7 @@ const ExhibitorEvents = () => {
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                   <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
                     <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-[#9929EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Event Information
@@ -1017,7 +1042,7 @@ const ExhibitorEvents = () => {
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Start Date</p>
                         <div className="flex items-center text-gray-900">
-                          <svg className="w-4 h-4 mr-2 text-[#9929EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 mr-2 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           <p className="text-sm font-medium">{new Date(selectedEvent.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
@@ -1027,7 +1052,7 @@ const ExhibitorEvents = () => {
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">End Date</p>
                         <div className="flex items-center text-gray-900">
-                          <svg className="w-4 h-4 mr-2 text-[#9929EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 mr-2 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           <p className="text-sm font-medium">{new Date(selectedEvent.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
@@ -1038,7 +1063,7 @@ const ExhibitorEvents = () => {
                     {selectedEvent.location && (selectedEvent.location.venue || selectedEvent.location.city || selectedEvent.location.address) && (
                       <div className="pt-4 border-t border-gray-200">
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
-                          <svg className="w-4 h-4 mr-1.5 text-[#9929EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 mr-1.5 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
@@ -1064,11 +1089,11 @@ const ExhibitorEvents = () => {
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                   <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-[#9929EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                       </svg>
                       License Keys
-                      <span className="ml-2 px-2.5 py-0.5 bg-[#9929EA] text-white text-xs font-semibold rounded-full">
+                      <span className="ml-2 px-2.5 py-0.5 bg-[#854AE6] text-white text-xs font-semibold rounded-full">
                         {selectedEvent.licenseKeys.length}
                       </span>
                     </h3>
@@ -1102,7 +1127,7 @@ const ExhibitorEvents = () => {
                           {selectedEvent.licenseKeys.map((lk, index) => (
                             <tr key={lk._id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                               <td className="px-4 py-3 text-sm">
-                                <code className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded text-xs font-mono border border-purple-200">
+                                <code className="bg-[#F4ECFF] text-[#5E2AB2] px-2.5 py-1 rounded text-xs font-mono border border-[#E3D4FF]">
                                   {lk.key.substring(0, 20)}...
                                 </code>
                               </td>
@@ -1119,7 +1144,7 @@ const ExhibitorEvents = () => {
                                   <span className="text-gray-600">{lk.maxActivations}</span>
                                   <div className="flex-1 ml-2 bg-gray-200 rounded-full h-1.5 max-w-[60px]">
                                     <div 
-                                      className="bg-[#9929EA] h-1.5 rounded-full transition-all"
+                                      className="bg-[#854AE6] h-1.5 rounded-full transition-all"
                                       style={{ width: `${(lk.usedCount / lk.maxActivations) * 100}%` }}
                                     ></div>
                                   </div>
@@ -1138,15 +1163,18 @@ const ExhibitorEvents = () => {
                                 </span>
                               </td>
                               <td className="px-4 py-3 text-sm text-center">
-                                <button
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => copyToClipboard(lk.key)}
-                                  className="inline-flex items-center justify-center p-2 text-[#9929EA] hover:bg-purple-50 rounded-lg transition-colors"
+                                  className="text-[#854AE6] hover:bg-[#F4ECFF]"
                                   title="Copy Key"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                   </svg>
-                                </button>
+                                </Button>
                               </td>
                             </tr>
                           ))}

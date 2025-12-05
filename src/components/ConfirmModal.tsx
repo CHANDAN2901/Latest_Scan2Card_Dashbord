@@ -24,13 +24,13 @@ const ConfirmModal = ({
   const typeStyles = {
     danger: 'bg-red-600 hover:bg-red-700',
     warning: 'bg-yellow-600 hover:bg-yellow-700',
-    info: 'bg-[#9929EA] hover:bg-[#8820d0]',
+    info: 'bg-[#854AE6] hover:bg-[#7340CC]',
   };
 
   const iconColors = {
     danger: 'text-red-600',
     warning: 'text-yellow-600',
-    info: 'text-[#9929EA]',
+    info: 'text-[#854AE6]',
   };
 
   return (

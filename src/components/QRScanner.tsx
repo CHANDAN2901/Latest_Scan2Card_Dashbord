@@ -50,7 +50,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onClose }) => {
         {error && <div className="text-red-500 mb-2">{error}</div>}
         <div className="flex gap-4">
           {!scanning && (
-            <button onClick={startScanner} className="bg-[#9929EA] text-white px-4 py-2 rounded">Start Scan</button>
+            <button onClick={startScanner} className="bg-[#854AE6] text-white px-4 py-2 rounded">Start Scan</button>
           )}
           <button onClick={stopScanner} className="bg-gray-300 px-4 py-2 rounded">Close</button>
         </div>

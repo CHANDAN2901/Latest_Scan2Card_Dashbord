@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import feedbackApi, { type FeedbackData, type FeedbackStats } from '../../api/feedback.api';
+import { Button } from '@/components/ui/button';
 
 const SuperAdminFeedback = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
@@ -97,8 +98,8 @@ const SuperAdminFeedback = () => {
                     <p className="text-sm font-medium text-gray-600">Total Feedback</p>
                     <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
                   </div>
-                  <div className="p-3 bg-purple-100 rounded-lg">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="p-3 bg-[#854AE6]/10 rounded-lg">
+                    <svg className="w-6 h-6 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                     </svg>
                   </div>
@@ -169,7 +170,7 @@ const SuperAdminFeedback = () => {
                     setStatusFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                 >
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
@@ -185,7 +186,7 @@ const SuperAdminFeedback = () => {
                     setCategoryFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                 >
                   <option value="all">All Categories</option>
                   <option value="bug">Bug Report</option>
@@ -255,7 +256,7 @@ const SuperAdminFeedback = () => {
                         <select
                           value={feedback.status}
                           onChange={(e) => handleStatusChange(feedback._id, e.target.value as any)}
-                          className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                          className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                         >
                           <option value="pending">Pending</option>
                           <option value="reviewed">Reviewed</option>
@@ -275,23 +276,29 @@ const SuperAdminFeedback = () => {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-6">
-                <button
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="px-3"
                 >
                   Previous
-                </button>
+                </Button>
                 <span className="text-sm text-gray-600">
                   Page {page} of {totalPages}
                 </span>
-                <button
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="px-3"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             )}
           </CardContent>

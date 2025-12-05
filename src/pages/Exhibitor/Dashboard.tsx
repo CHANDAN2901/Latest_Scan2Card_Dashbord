@@ -113,14 +113,14 @@ const ExhibitorDashboard = () => {
               <div className="text-center py-8 text-gray-500">Loading...</div>
             ) : topEvents.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No events yet. <Link to="/exhibitor/events" className="text-[#8C00FF] hover:underline">Create your first event</Link>
+                No events yet. <Link to="/exhibitor/events" className="text-[#854AE6] hover:underline">Create your first event</Link>
               </div>
             ) : (
               <div className="space-y-3">
                 {topEvents.map((event, index) => (
                   <div key={event._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-4">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-[#8C00FF] font-bold">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#E7D5FF] text-[#854AE6] font-bold">
                         {index + 1}
                       </span>
                       <div>
@@ -157,7 +157,7 @@ const ExhibitorDashboard = () => {
             <select
               value={trendPeriod}
               onChange={(e) => setTrendPeriod(Number(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
             >
               {periodOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -187,9 +187,9 @@ const ExhibitorDashboard = () => {
                   <Line 
                     type="monotone" 
                     dataKey="count" 
-                    stroke="#8C00FF" 
+                    stroke="#854AE6" 
                     strokeWidth={2}
-                    dot={{ fill: '#8C00FF', r: 4 }}
+                    dot={{ fill: '#854AE6', r: 4 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>

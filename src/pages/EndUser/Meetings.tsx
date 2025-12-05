@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import meetingApi, { type MeetingData, type CreateMeetingData } from '../../api/meeting.api';
 import leadApi, { type Lead } from '../../api/lead.api';
 
@@ -207,7 +208,8 @@ const EndUserMeetings = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Meetings</h1>
             <p className="text-gray-600 mt-1">Schedule and manage meetings with your leads</p>
           </div>
-          <button
+          <Button
+            size="sm"
             onClick={() => {
               if (showCreateForm) {
                 handleCancelEdit();
@@ -215,10 +217,9 @@ const EndUserMeetings = () => {
                 setShowCreateForm(true);
               }
             }}
-            className="bg-[#8C00FF] hover:bg-[#7a00e6] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             {showCreateForm ? 'Cancel' : '+ Schedule Meeting'}
-          </button>
+          </Button>
         </div>
 
         {/* Create/Edit Meeting Form */}
@@ -238,7 +239,7 @@ const EndUserMeetings = () => {
                     <select
                       value={formData.leadId}
                       onChange={(e) => setFormData({ ...formData, leadId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       required
                     >
                       <option value="">Select a lead</option>
@@ -258,7 +259,7 @@ const EndUserMeetings = () => {
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       placeholder="Meeting title"
                       required
                     />
@@ -269,7 +270,7 @@ const EndUserMeetings = () => {
                     <select
                       value={formData.meetingMode}
                       onChange={(e) => setFormData({ ...formData, meetingMode: e.target.value as any })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       required
                     >
                       <option value="online">Online</option>
@@ -284,7 +285,7 @@ const EndUserMeetings = () => {
                       type="datetime-local"
                       value={formData.startAt}
                       onChange={(e) => setFormData({ ...formData, startAt: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       required
                     />
                   </div>
@@ -295,7 +296,7 @@ const EndUserMeetings = () => {
                       type="datetime-local"
                       value={formData.endAt}
                       onChange={(e) => setFormData({ ...formData, endAt: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       required
                     />
                   </div>
@@ -306,7 +307,7 @@ const EndUserMeetings = () => {
                       type="text"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       placeholder="Meeting location or online link"
                     />
                   </div>
@@ -316,20 +317,16 @@ const EndUserMeetings = () => {
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       rows={3}
                       placeholder="Meeting agenda or notes"
                     />
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-[#8C00FF] hover:bg-[#7a00e6] text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                >
+                <Button type="submit" disabled={loading} fullWidth>
                   {loading ? (editingMeetingId ? 'Updating...' : 'Scheduling...') : (editingMeetingId ? 'Update Meeting' : 'Schedule Meeting')}
-                </button>
+                </Button>
               </form>
             </CardContent>
           </Card>
@@ -401,24 +398,30 @@ const EndUserMeetings = () => {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <button
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => handleEdit(meeting)}
-                              className="text-[#8C00FF] hover:text-[#7a00e6] p-1 rounded hover:bg-purple-50 transition-colors"
+                              className="text-[#854AE6] hover:text-[#6F33C5] hover:bg-[#F4ECFF]"
                               title="Edit meeting"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => handleDelete(meeting._id)}
-                              className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
                               title="Delete meeting"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
-                            </button>
+                            </Button>
                           </div>
                         </td>
                       </tr>

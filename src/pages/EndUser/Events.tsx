@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import rsvpApi, { type Rsvp } from '../../api/rsvp.api';
+import { Button } from '@/components/ui/button';
 
 const EndUserEvents = () => {
   const [rsvps, setRsvps] = useState<Rsvp[]>([]);
@@ -100,20 +101,17 @@ const EndUserEvents = () => {
             <h1 className="text-3xl font-bold text-gray-900">My Events</h1>
             <p className="text-gray-600 mt-2">Events you've registered for</p>
           </div>
-          <button
-            onClick={() => setShowJoinModal(true)}
-            className="px-6 py-3 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
-          >
+          <Button onClick={() => setShowJoinModal(true)} className="gap-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Join Event
-          </button>
+          </Button>
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9929EA]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#854AE6]"></div>
           </div>
         ) : rsvps.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
@@ -180,7 +178,7 @@ const EndUserEvents = () => {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <code className="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs font-mono border border-purple-200">
+                        <code className="bg-[#F4ECFF] text-[#5E2AB2] px-2 py-1 rounded text-xs font-mono border border-[#E3D4FF]">
                           {rsvp.eventLicenseKey}
                         </code>
                       </td>
@@ -199,15 +197,17 @@ const EndUserEvents = () => {
                       </td>
                       <td className="px-6 py-4 text-center">
                         {rsvp.status === 1 && (
-                          <button
+                          <Button
                             onClick={() => handleCancelRsvp(rsvp._id)}
-                            className="inline-flex items-center px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-sm font-medium transition-colors border border-red-200"
+                            variant="outline"
+                            size="sm"
+                            className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
                           >
                             <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                             Cancel
-                          </button>
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -225,14 +225,17 @@ const EndUserEvents = () => {
               {/* Modal Header */}
               <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900">Join Event</h2>
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={resetJoinModal}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </Button>
               </div>
 
               {/* Modal Body */}
@@ -250,7 +253,7 @@ const EndUserEvents = () => {
                       setValidationResult(null);
                     }}
                     placeholder="Enter your 9-character license key"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9929EA] focus:border-transparent text-center font-mono text-lg uppercase"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent text-center font-mono text-lg uppercase"
                     maxLength={9}
                   />
                 </div>
@@ -299,35 +302,38 @@ const EndUserEvents = () => {
                 <div className="flex gap-3 pt-2">
                   {!validationResult ? (
                     <>
-                      <button
+                      <Button
                         onClick={handleValidateLicenseKey}
                         disabled={validating || !licenseKey.trim()}
-                        className="flex-1 px-6 py-3 bg-[#9929EA] hover:bg-[#8820d0] text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1"
                       >
                         {validating ? 'Validating...' : 'Validate Key'}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
                         onClick={resetJoinModal}
-                        className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </>
                   ) : (
                     <>
-                      <button
+                      <Button
                         onClick={handleJoinEvent}
                         disabled={joiningEvent}
-                        className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        variant="success"
+                        className="flex-1"
                       >
                         {joiningEvent ? 'Joining...' : 'Confirm & Join'}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
                         onClick={resetJoinModal}
-                        className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>

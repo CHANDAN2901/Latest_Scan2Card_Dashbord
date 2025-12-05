@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import leadApi, { type Lead } from '../../api/lead.api';
 import { eventAPI } from '../../api/event.api';
 
@@ -122,20 +123,22 @@ const ExhibitorLeads = () => {
             <p className="text-gray-600 mt-1">View and manage all captured leads</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              className="px-4 py-2 bg-[#8C00FF] hover:bg-[#7A00E6] disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
+            <Button
+              size="sm"
               onClick={handleExportAllData}
               disabled={exportLoading}
             >
               {exportLoading ? 'Exporting...' : 'Export with All Data'}
-            </button>
-            <button
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-gray-600 hover:bg-gray-700 text-white"
               onClick={handleExportEntryOnly}
               disabled={exportLoading}
             >
               {exportLoading ? 'Exporting...' : 'Export Entry Key Only'}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -150,12 +153,12 @@ const ExhibitorLeads = () => {
                 placeholder="Search by name, email, company..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
               />
               <select
                 value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
               >
                 <option value="">All Events</option>
                 {events.map((event) => (
@@ -167,7 +170,7 @@ const ExhibitorLeads = () => {
               <select
                 value={filterRating || ''}
                 onChange={(e) => setFilterRating(e.target.value ? parseInt(e.target.value) : undefined)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
               >
                 <option value="">All Ratings</option>
                 <option value="5">5 Stars</option>
@@ -219,7 +222,7 @@ const ExhibitorLeads = () => {
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
                           {lead.entryCode ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 font-mono">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#F4ECFF] text-[#5E2AB2] border border-[#E3D4FF] font-mono">
                               {lead.entryCode}
                             </span>
                           ) : (

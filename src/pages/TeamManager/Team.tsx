@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import teamManagerAPI, { type TeamMemberStats } from '../../api/teamManager.api';
+import { Button } from '@/components/ui/button';
 
 const TeamMembers = () => {
   const [members, setMembers] = useState<TeamMemberStats[]>([]);
@@ -62,7 +63,7 @@ const TeamMembers = () => {
               placeholder="Search members by name or email..."
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
             />
           </CardContent>
         </Card>
@@ -103,7 +104,7 @@ const TeamMembers = () => {
                         <td className="py-4 px-4 text-gray-600">{member.email}</td>
                         <td className="py-4 px-4 text-gray-600">{member.phoneNumber || '-'}</td>
                         <td className="py-4 px-4 text-center">
-                          <span className="inline-flex items-center justify-center px-3 py-1 bg-[#8C00FF]/10 text-[#8C00FF] rounded-full text-sm font-medium">
+                          <span className="inline-flex items-center justify-center px-3 py-1 bg-[#854AE6]/10 text-[#854AE6] rounded-full text-sm font-medium">
                             {member.leadCount}
                           </span>
                         </td>
@@ -131,23 +132,27 @@ const TeamMembers = () => {
             {/* Pagination */}
             {pagination.pages > 1 && (
               <div className="flex justify-center gap-2 mt-6">
-                <button
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4"
                 >
                   Previous
-                </button>
+                </Button>
                 <span className="px-4 py-2 text-gray-700">
                   Page {page} of {pagination.pages}
                 </span>
-                <button
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setPage(Math.min(pagination.pages, page + 1))}
                   disabled={page === pagination.pages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             )}
           </CardContent>

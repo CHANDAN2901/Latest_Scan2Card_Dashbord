@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import QRScanner from '../../components/QRScanner';
 import leadApi, { type LeadStats } from '../../api/lead.api';
+import { Button } from '@/components/ui/button';
 
 const EndUserDashboard = () => {
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -21,6 +22,7 @@ const EndUserDashboard = () => {
       setQRScanLoading(false);
     }
   };
+  
   const [stats, setStats] = useState<LeadStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +52,7 @@ const EndUserDashboard = () => {
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9929EA]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#854AE6]"></div>
           </div>
         ) : (
           <>
@@ -63,8 +65,8 @@ const EndUserDashboard = () => {
                     <p className="text-sm font-medium text-gray-600">Total Leads</p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalLeads || 0}</p>
                   </div>
-                  <div className="bg-purple-100 p-3 rounded-lg">
-                    <svg className="w-8 h-8 text-[#9929EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-[#854AE6]/10 p-3 rounded-lg">
+                    <svg className="w-8 h-8 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
@@ -139,7 +141,7 @@ const EndUserDashboard = () => {
                         <div className="flex-1">
                           <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
                             <div
-                              className="bg-[#9929EA] h-full rounded-full transition-all"
+                              className="bg-[#854AE6] h-full rounded-full transition-all"
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
@@ -156,35 +158,40 @@ const EndUserDashboard = () => {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <button className="bg-gradient-to-r from-[#9929EA] to-[#8C00FF] text-white p-8 rounded-xl shadow-lg transition-all transform hover:scale-105">
+              <Button
+                type="button"
+                className="bg-gradient-to-r from-[#854AE6] to-[#6F3EC2] text-white p-8 rounded-xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center text-center gap-4 h-auto"
+              >
                 <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                 </svg>
                 <h3 className="text-xl font-bold mb-2">Scan Business Card</h3>
-                <p className="text-purple-100">Use OCR to capture lead information</p>
-              </button>
+                <p className="text-[#E1D4FA]">Use OCR to capture lead information</p>
+              </Button>
 
-              <button
+              <Button
+                type="button"
                 onClick={() => setShowQRScanner(true)}
-                className="bg-gradient-to-r from-[#00C9A7] to-[#00B4D8] text-white p-8 rounded-xl shadow-lg transition-all transform hover:scale-105"
+                className="bg-gradient-to-r from-[#00C9A7] to-[#00B4D8] text-white p-8 rounded-xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center text-center gap-4 h-auto"
               >
                 <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7V5a2 2 0 012-2h2m10 0h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2m-10 0H5a2 2 0 01-2-2v-2" />
                 </svg>
                 <h3 className="text-xl font-bold mb-2">Scan QR Code</h3>
                 <p className="text-cyan-100">Scan a digital business card QR</p>
-              </button>
+              </Button>
 
-              <button
+              <Button
+                type="button"
                 onClick={() => window.location.href = '/enduser/leads'}
-                className="bg-white border-2 border-[#9929EA] text-[#9929EA] p-8 rounded-xl shadow-sm transition-all transform hover:scale-105 hover:shadow-lg"
+                className="bg-white border-2 border-[#854AE6] text-[#854AE6] p-8 rounded-xl shadow-sm transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center text-center gap-4 h-auto"
               >
                 <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <h3 className="text-xl font-bold mb-2">Manage Leads</h3>
-                <p className="text-[#7a00e6]">View and organize all your leads</p>
-              </button>
+                <p className="text-[#5E2AB2]">View and organize all your leads</p>
+              </Button>
             </div>
 
             {/* QR Scanner Modal */}
@@ -218,14 +225,18 @@ const EndUserDashboard = () => {
                     </div>
                   )}
                   <div className="mt-4 flex justify-end">
-                    <button
-                      className="bg-[#9929EA] text-white px-4 py-2 rounded"
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="bg-[#854AE6] hover:bg-[#6F33C5]"
                       onClick={() => {
                         setShowQRScanner(false);
                         setQRScanResult(null);
                         setQRScanError(null);
                       }}
-                    >Close</button>
+                    >
+                      Close
+                    </Button>
                   </div>
                 </div>
               </div>

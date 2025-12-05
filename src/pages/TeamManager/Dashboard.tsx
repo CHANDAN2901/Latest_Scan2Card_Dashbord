@@ -3,6 +3,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import teamManagerAPI, { type DashboardStats, type LeadsGraphData, type TeamManagerEvent } from '../../api/teamManager.api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Button } from '@/components/ui/button';
 
 const TeamManagerDashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -84,7 +85,7 @@ const TeamManagerDashboard = () => {
               <CardTitle className="text-sm font-medium text-gray-600">Total Team Members</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[#8C00FF]">{stats?.totalMembers || 0}</div>
+              <div className="text-3xl font-bold text-[#854AE6]">{stats?.totalMembers || 0}</div>
             </CardContent>
           </Card>
 
@@ -117,7 +118,7 @@ const TeamManagerDashboard = () => {
                   <select
                     value={selectedEvent}
                     onChange={(e) => setSelectedEvent(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                   >
                     {events.map((event) => (
                       <option key={event._id} value={event._id}>
@@ -126,26 +127,32 @@ const TeamManagerDashboard = () => {
                     ))}
                   </select>
                   <div className="flex gap-2">
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setPeriod('hourly')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`px-4 text-sm font-medium transition-colors ${
                         period === 'hourly'
-                          ? 'bg-[#8C00FF] text-white'
+                          ? 'bg-[#854AE6] text-white hover:bg-[#6F33C5]'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       Hourly
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setPeriod('daily')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`px-4 text-sm font-medium transition-colors ${
                         period === 'daily'
-                          ? 'bg-[#8C00FF] text-white'
+                          ? 'bg-[#854AE6] text-white hover:bg-[#6F33C5]'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       Daily
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -168,7 +175,7 @@ const TeamManagerDashboard = () => {
                       <Line 
                         type="monotone" 
                         dataKey="count" 
-                        stroke="#8C00FF" 
+                        stroke="#854AE6" 
                         strokeWidth={2}
                         name="Leads"
                       />

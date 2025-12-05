@@ -55,7 +55,7 @@ const TeamManagerMeetings: React.FC = () => {
         <h2 className="text-2xl font-bold mb-4">Team Meetings</h2>
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9929EA]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#854AE6]"></div>
           </div>
         ) : meetings.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import profileApi, { type UserProfile, type UpdateProfileData, type ChangePasswordData, type SubmitFeedbackData, type FeedbackData } from '../../api/profile.api';
 import authApi from '../../api/auth.api';
 
@@ -196,36 +197,45 @@ const EndUserProfile = () => {
         {/* Tab Navigation */}
         <div className="mb-6 border-b border-gray-200">
           <nav className="flex gap-4">
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveTab('profile')}
-              className={`pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`rounded-none pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'profile'
-                  ? 'border-[#8C00FF] text-[#8C00FF]'
+                  ? 'border-[#854AE6] text-[#854AE6]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
               Profile Information
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveTab('password')}
-              className={`pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`rounded-none pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'password'
-                  ? 'border-[#8C00FF] text-[#8C00FF]'
+                  ? 'border-[#854AE6] text-[#854AE6]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
               Change Password
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveTab('feedback')}
-              className={`pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`rounded-none pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'feedback'
-                  ? 'border-[#8C00FF] text-[#8C00FF]'
+                  ? 'border-[#854AE6] text-[#854AE6]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
               Feedback
-            </button>
+            </Button>
           </nav>
         </div>
 
@@ -291,7 +301,7 @@ const EndUserProfile = () => {
                       type="text"
                       value={profileForm.firstName}
                       onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       required
                     />
                   </div>
@@ -301,7 +311,7 @@ const EndUserProfile = () => {
                       type="text"
                       value={profileForm.lastName}
                       onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       required
                     />
                   </div>
@@ -321,7 +331,7 @@ const EndUserProfile = () => {
                       type="tel"
                       value={profileForm.phoneNumber}
                       onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       placeholder="+1 234 567 8900"
                     />
                   </div>
@@ -352,7 +362,7 @@ const EndUserProfile = () => {
                           }}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8C00FF]"></div>
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D1B5FF] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#854AE6]"></div>
                       </label>
                     </div>
                     {user?.twoFactorEnabled && (
@@ -362,13 +372,9 @@ const EndUserProfile = () => {
                 </div>
 
                 <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-[#8C00FF] hover:bg-[#7a00e6] text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                  >
+                  <Button type="submit" disabled={loading}>
                     {loading ? 'Updating...' : 'Update Profile'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </CardContent>
@@ -390,7 +396,7 @@ const EndUserProfile = () => {
                     type="password"
                     value={passwordForm.currentPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                     required
                   />
                 </div>
@@ -400,7 +406,7 @@ const EndUserProfile = () => {
                     type="password"
                     value={passwordForm.newPassword}
                     onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                     minLength={6}
                     required
                   />
@@ -412,20 +418,16 @@ const EndUserProfile = () => {
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                     minLength={6}
                     required
                   />
                 </div>
 
                 <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-[#8C00FF] hover:bg-[#7a00e6] text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                  >
+                  <Button type="submit" disabled={loading}>
                     {loading ? 'Changing...' : 'Change Password'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </CardContent>
@@ -448,7 +450,7 @@ const EndUserProfile = () => {
                       <select
                         value={feedbackForm.category}
                         onChange={(e) => setFeedbackForm({ ...feedbackForm, category: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       >
                         <option value="other">General</option>
                         <option value="bug">Bug Report</option>
@@ -460,11 +462,13 @@ const EndUserProfile = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Rating (Optional)</label>
                       <div className="flex gap-2 items-center pt-2">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <button
+                          <Button
                             key={star}
                             type="button"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
-                            className="focus:outline-none"
+                            className="focus-visible:ring-0 focus-visible:ring-offset-0"
                           >
                             <svg
                               className={`w-6 h-6 ${
@@ -483,7 +487,7 @@ const EndUserProfile = () => {
                                 d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                               />
                             </svg>
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -494,20 +498,16 @@ const EndUserProfile = () => {
                     <textarea
                       value={feedbackForm.message}
                       onChange={(e) => setFeedbackForm({ ...feedbackForm, message: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8C00FF] focus:border-transparent outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none"
                       rows={4}
                       placeholder="Share your thoughts, suggestions, or report issues..."
                       required
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-[#8C00FF] hover:bg-[#7a00e6] text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                  >
+                  <Button type="submit" disabled={loading}>
                     {loading ? 'Submitting...' : 'Submit Feedback'}
-                  </button>
+                  </Button>
                 </form>
               </CardContent>
             </Card>
