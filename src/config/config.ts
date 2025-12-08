@@ -5,7 +5,7 @@
  */
 
 // API Base URL - Update this with your backend server URL
-export const API_BASE_URL = 'https://ji4rruehim.ap-south-1.awsapprunner.com/api';
+export const API_BASE_URL = 'https://api-stag.scan2card.com/api';
 
 export default {
   api: {

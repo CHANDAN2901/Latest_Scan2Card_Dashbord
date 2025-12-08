@@ -120,16 +120,6 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 mb-3">Demo Credentials:</p>
-          <div className="space-y-2 text-xs text-gray-500">
-            <p><strong>Super Admin:</strong> superadmin@scan2card.com / admin123</p>
-            <p><strong>Exhibitor:</strong> exhibitor@scan2card.com / exhibitor123</p>
-            <p><strong>Team Manager:</strong> manager@scan2card.com / manager123</p>
-            <p><strong>End User:</strong> user@scan2card.com / user123</p>
-          </div>
-        </div>
       </div>
     </div>
   );
