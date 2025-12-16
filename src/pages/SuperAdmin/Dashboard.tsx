@@ -98,7 +98,7 @@ const SuperAdminDashboard = () => {
         {/* Header */}
         <div className="mb-6 lg:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-          <p className="text-gray-600 mt-1">Manage exhibitors and monitor system activity</p>
+          <p className="text-gray-600 mt-1">Manage Organisers and monitor system activity</p>
         </div>
 
         {/* Error Message */}
@@ -112,7 +112,7 @@ const SuperAdminDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Exhibitors</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Organisers</CardTitle>
               <div className="bg-[#854AE6]/10 p-2 rounded-lg">
                 <svg className="w-4 h-4 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -121,7 +121,7 @@ const SuperAdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.totalExhibitors || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">Active exhibitor accounts</p>
+              <p className="text-xs text-muted-foreground mt-1">Active Organiser accounts</p>
             </CardContent>
           </Card>
 

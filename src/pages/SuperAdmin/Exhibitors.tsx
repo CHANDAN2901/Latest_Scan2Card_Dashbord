@@ -281,8 +281,8 @@ const SuperAdminExhibitors = () => {
         {/* Header */}
         <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Exhibitors</h1>
-            <p className="text-gray-600 mt-1">Manage all exhibitor accounts</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Organisers</h1>
+            <p className="text-gray-600 mt-1">Manage all Organisers accounts</p>
           </div>
           {activeTab === 'all' && (
             <Button
@@ -293,7 +293,7 @@ const SuperAdminExhibitors = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              {showForm ? 'Cancel' : 'Add Exhibitor'}
+              {showForm ? 'Cancel' : 'Add Organisers'}
             </Button>
           )}
         </div>
@@ -301,7 +301,7 @@ const SuperAdminExhibitors = () => {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="all">All Exhibitors</TabsTrigger>
+            <TabsTrigger value="all">All Organisers</TabsTrigger>
             <TabsTrigger value="top-performers">Top Performers</TabsTrigger>
           </TabsList>
 
@@ -310,7 +310,7 @@ const SuperAdminExhibitors = () => {
         {/* Create Exhibitor Form */}
         {showForm && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 lg:mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Create New Exhibitor</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Create New Organisers</h2>
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -356,7 +356,7 @@ const SuperAdminExhibitors = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="exhibitor@example.com"
+                    placeholder="Organisers@example.com"
                   />
                 </div>
 
@@ -424,7 +424,7 @@ const SuperAdminExhibitors = () => {
                   className="px-6 bg-[#854AE6] hover:bg-[#7340CC] text-white"
                   disabled={loading}
                 >
-                  {loading ? 'Creating...' : 'Create Exhibitor'}
+                  {loading ? 'Creating...' : 'Create Organisers'}
                 </Button>
               </div>
             </form>
@@ -451,13 +451,13 @@ const SuperAdminExhibitors = () => {
                 {fetchLoading ? (
                   <tr>
                     <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                      Loading exhibitors...
+                      Loading Organisers...
                     </td>
                   </tr>
                 ) : exhibitors.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                      No exhibitors found
+                      No Organisers found
                     </td>
                   </tr>
                 ) : (
@@ -557,12 +557,12 @@ const SuperAdminExhibitors = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Most Events Created</CardTitle>
-                    <CardDescription>Top exhibitors by number of events created</CardDescription>
+                    <CardDescription>Top Organisers by number of events created</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {topPerformers.mostEventsCreated.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        No exhibitors have created events yet
+                        No Organisers have created events yet
                       </div>
                     ) : (
                     <div className="overflow-x-auto">
@@ -570,7 +570,7 @@ const SuperAdminExhibitors = () => {
                         <thead>
                           <tr>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exhibitor</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organiser</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Events</th>
                           </tr>
@@ -612,12 +612,12 @@ const SuperAdminExhibitors = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Most License Keys Created</CardTitle>
-                    <CardDescription>Top exhibitors by number of license keys generated</CardDescription>
+                    <CardDescription>Top Organisers by number of license keys generated</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {topPerformers.mostKeysCreated.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        No exhibitors have created license keys yet
+                        No Organisers have created license keys yet
                       </div>
                     ) : (
                     <div className="overflow-x-auto">
@@ -625,7 +625,7 @@ const SuperAdminExhibitors = () => {
                         <thead>
                           <tr>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exhibitor</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organiser</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keys</th>
                           </tr>
@@ -667,7 +667,7 @@ const SuperAdminExhibitors = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Most License Key Usage</CardTitle>
-                    <CardDescription>Top exhibitors by license key scans and usage</CardDescription>
+                    <CardDescription>Top Organisers by license key scans and usage</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {topPerformers.mostLicenseKeyUsage.length === 0 ? (
@@ -680,7 +680,7 @@ const SuperAdminExhibitors = () => {
                         <thead>
                           <tr>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exhibitor</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organisers</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Used Keys</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Scans</th>
@@ -737,7 +737,7 @@ const SuperAdminExhibitors = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Exhibitor</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Organisers</h2>
                 <form onSubmit={handleUpdateSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -857,7 +857,7 @@ const SuperAdminExhibitors = () => {
                       className="px-6 bg-[#854AE6] hover:bg-[#7340CC] text-white"
                       disabled={loading}
                     >
-                      {loading ? 'Updating...' : 'Update Exhibitor'}
+                      {loading ? 'Updating...' : 'Update Organiser'}
                     </Button>
                   </div>
                 </form>
@@ -1025,8 +1025,8 @@ const SuperAdminExhibitors = () => {
         {/* Delete Confirmation Modal */}
         <ConfirmModal
           isOpen={showDeleteModal}
-          title="Delete Exhibitor"
-          message="Are you sure you want to delete this exhibitor? This action cannot be undone."
+          title="Delete Organisers"
+          message="Are you sure you want to delete this Organiser? This action cannot be undone."
           confirmText="Delete"
           cancelText="Cancel"
           type="danger"
