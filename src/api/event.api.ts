@@ -294,4 +294,66 @@ export const eventAPI = {
       throw error;
     }
   },
+
+  getEventPerformance: async (
+    limit = 10,
+    startDate?: string,
+    endDate?: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      events: Array<{
+        _id: string;
+        eventName: string;
+        startDate: string;
+        endDate: string;
+        isActive: boolean;
+        isExpired: boolean;
+        leadCount: number;
+      }>;
+    };
+  }> => {
+    try {
+      const response = await apiClient.get('/events/dashboard/event-performance', {
+        params: { limit, startDate, endDate },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || 'Failed to fetch event performance');
+      }
+      throw error;
+    }
+  },
+
+  getStallPerformance: async (
+    eventId?: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      stalls: Array<{
+        key: string;
+        stallName: string;
+        email: string;
+        eventName: string;
+        leadCount: number;
+      }>;
+    };
+  }> => {
+    try {
+      const response = await apiClient.get('/events/dashboard/stall-performance', {
+        params: { eventId, startDate, endDate },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || 'Failed to fetch stall performance');
+      }
+      throw error;
+    }
+  },
 };
