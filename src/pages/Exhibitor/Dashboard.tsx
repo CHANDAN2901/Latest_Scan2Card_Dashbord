@@ -4,6 +4,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { eventAPI } from '../../api/event.api';
+import { getUser } from '../../utils/auth';
 
 interface EventPerformance {
   _id: string;
@@ -182,9 +183,30 @@ const ExhibitorDashboard = () => {
           </div>
         )}
 
-        <div className="mb-6 lg:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Organizer Dashboard</h1>
-          <p className="text-gray-600 mt-1">Manage your events and leads</p>
+        {/* Header with Welcome and Avatar */}
+        <div className="flex items-center justify-between mb-6 lg:mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, {getUser()?.firstName || 'User'}!</h1>
+            <p className="text-gray-600 mt-1">Manage your events and leads</p>
+          </div>
+          {/* User Avatar */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <p className="text-sm font-medium text-gray-900">{getUser()?.firstName} {getUser()?.lastName}</p>
+              <p className="text-xs text-gray-500">{getUser()?.email}</p>
+            </div>
+            {getUser()?.profileImage ? (
+              <img
+                src={getUser()?.profileImage}
+                alt={`${getUser()?.firstName} ${getUser()?.lastName}`}
+                className="w-12 h-12 rounded-full object-cover shadow-md border-2 border-[#854AE6]"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#854AE6] to-[#6F33C5] flex items-center justify-center text-white font-bold text-lg shadow-md">
+                {((getUser()?.firstName || 'U')[0] + (getUser()?.lastName || 'U')[0]).toUpperCase()}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Stats Grid */}

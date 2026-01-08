@@ -6,6 +6,7 @@ export interface User {
   phoneNumber?: string;
   role: 'SUPERADMIN' | 'EXHIBITOR' | 'TEAMMANAGER' | 'ENDUSER';
   companyName?: string;
+  profileImage?: string;
   isActive?: boolean;
 }
 
