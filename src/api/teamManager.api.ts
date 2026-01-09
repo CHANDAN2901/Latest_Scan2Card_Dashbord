@@ -84,12 +84,30 @@ export interface LicenseKeysResponse {
   };
 }
 
+export interface MemberEvent {
+  _id: string;
+  eventName: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  isRevoked: boolean;
+  revokedAt?: string;
+  revokedBy?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  licenseKey?: string;
+}
+
 const teamManagerAPI = {
-    // Get leads for a specific team member (filtered to events managed by this team manager)
-    getMemberLeads: async (memberId: string) => {
-      const response = await axiosInstance.get<{ success: boolean; data: any[] }>(`/team-manager/team/member/${memberId}/leads`);
-      return response.data.data;
-    },
+  // Get leads for a specific team member (filtered to events managed by this team manager)
+  getMemberLeads: async (memberId: string) => {
+    const response = await axiosInstance.get<{ success: boolean; data: any[] }>(`/team-manager/team/member/${memberId}/leads`);
+    return response.data.data;
+  },
   // Get dashboard stats
   getDashboardStats: async () => {
     const response = await axiosInstance.get<{ success: boolean; data: DashboardStats }>('/team-manager/dashboard/stats');
@@ -124,6 +142,28 @@ const teamManagerAPI = {
       params: { page, limit, search },
     });
     return response.data.data;
+  },
+
+  // Get team member's events with revocation status
+  getTeamMemberEvents: async (memberId: string) => {
+    const response = await axiosInstance.get<{ success: boolean; data: MemberEvent[] }>(`/team-manager/team/member/${memberId}/events`);
+    return response.data.data;
+  },
+
+  // Revoke event access for a team member
+  revokeEventAccess: async (memberId: string, eventId: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string }>(`/team-manager/team/member/${memberId}/revoke-access`, {
+      eventId,
+    });
+    return response.data;
+  },
+
+  // Restore event access for a team member
+  restoreEventAccess: async (memberId: string, eventId: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string }>(`/team-manager/team/member/${memberId}/restore-access`, {
+      eventId,
+    });
+    return response.data;
   },
 };
 

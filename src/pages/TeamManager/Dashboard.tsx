@@ -155,11 +155,10 @@ const TeamManagerDashboard = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setPeriod('hourly')}
-                      className={`px-4 text-sm font-medium transition-colors ${
-                        period === 'hourly'
+                      className={`px-4 text-sm font-medium transition-colors ${period === 'hourly'
                           ? 'bg-[#854AE6] text-white hover:bg-[#6F33C5]'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       Hourly
                     </Button>
@@ -168,11 +167,10 @@ const TeamManagerDashboard = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setPeriod('daily')}
-                      className={`px-4 text-sm font-medium transition-colors ${
-                        period === 'daily'
+                      className={`px-4 text-sm font-medium transition-colors ${period === 'daily'
                           ? 'bg-[#854AE6] text-white hover:bg-[#6F33C5]'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       Daily
                     </Button>
@@ -186,8 +184,8 @@ const TeamManagerDashboard = () => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={graphData.graphData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="label" 
+                      <XAxis
+                        dataKey="label"
                         angle={-45}
                         textAnchor="end"
                         height={100}
@@ -195,10 +193,10 @@ const TeamManagerDashboard = () => {
                       />
                       <YAxis />
                       <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="count" 
-                        stroke="#854AE6" 
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        stroke="#854AE6"
                         strokeWidth={2}
                         name="Leads"
                       />
@@ -215,7 +213,7 @@ const TeamManagerDashboard = () => {
         )}
 
         {/* License Keys */}
-        {stats && stats.licenseKeys.length > 0 && (
+        {stats && stats.licenseKeys && stats.licenseKeys.length > 0 && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">

@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import teamManagerAPI, { type TeamMemberStats } from '../../api/teamManager.api';
+import teamManagerAPI, { type TeamMemberStats, type MemberEvent } from '../../api/teamManager.api';
 import { Button } from '@/components/ui/button';
 
 const TeamMembers = () => {
   const [members, setMembers] = useState<TeamMemberStats[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({
@@ -15,6 +16,21 @@ const TeamMembers = () => {
     pages: 1,
     limit: 10,
   });
+
+  // Modal state
+  const [showEventsModal, setShowEventsModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<TeamMemberStats | null>(null);
+  const [memberEvents, setMemberEvents] = useState<MemberEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Confirmation dialog state
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'revoke' | 'restore';
+    eventId: string;
+    eventName: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -38,6 +54,68 @@ const TeamMembers = () => {
     setPage(1);
   };
 
+  const handleManageAccess = async (member: TeamMemberStats) => {
+    setSelectedMember(member);
+    setShowEventsModal(true);
+    setEventsLoading(true);
+    setError('');
+
+    try {
+      const events = await teamManagerAPI.getTeamMemberEvents(member._id);
+      setMemberEvents(events);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to load member events');
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  const handleRevokeClick = (eventId: string, eventName: string) => {
+    setConfirmAction({ type: 'revoke', eventId, eventName });
+    setShowConfirmDialog(true);
+  };
+
+  const handleRestoreClick = (eventId: string, eventName: string) => {
+    setConfirmAction({ type: 'restore', eventId, eventName });
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction || !selectedMember) return;
+
+    setActionLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      if (confirmAction.type === 'revoke') {
+        await teamManagerAPI.revokeEventAccess(selectedMember._id, confirmAction.eventId);
+        setSuccess(`Access revoked successfully for ${confirmAction.eventName}`);
+      } else {
+        await teamManagerAPI.restoreEventAccess(selectedMember._id, confirmAction.eventId);
+        setSuccess(`Access restored successfully for ${confirmAction.eventName}`);
+      }
+
+      // Refresh member events
+      const events = await teamManagerAPI.getTeamMemberEvents(selectedMember._id);
+      setMemberEvents(events);
+    } catch (err: any) {
+      setError(err.response?.data?.message || `Failed to ${confirmAction.type} access`);
+    } finally {
+      setActionLoading(false);
+      setShowConfirmDialog(false);
+      setConfirmAction(null);
+    }
+  };
+
+  const closeModal = () => {
+    setShowEventsModal(false);
+    setSelectedMember(null);
+    setMemberEvents([]);
+    setError('');
+    setSuccess('');
+  };
+
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
@@ -45,13 +123,19 @@ const TeamMembers = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Team Members</h1>
-            <p className="text-gray-600 mt-1">View all team members and their performance</p>
+            <p className="text-gray-600 mt-1">View all team members and manage their event access</p>
           </div>
         </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            {success}
           </div>
         )}
 
@@ -91,6 +175,7 @@ const TeamMembers = () => {
                       <th className="text-center py-3 px-4 font-medium text-gray-700">Lead Count</th>
                       <th className="text-center py-3 px-4 font-medium text-gray-700">Status</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700">Joined</th>
+                      <th className="text-center py-3 px-4 font-medium text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -110,17 +195,27 @@ const TeamMembers = () => {
                         </td>
                         <td className="py-4 px-4 text-center">
                           <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              member.isActive
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${member.isActive
                                 ? 'bg-green-100 text-green-700'
                                 : 'bg-gray-100 text-gray-700'
-                            }`}
+                              }`}
                           >
                             {member.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td className="py-4 px-4 text-gray-600">
                           {new Date(member.joinedAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleManageAccess(member)}
+                            className="text-[#854AE6] border-[#854AE6] hover:bg-[#854AE6] hover:text-white"
+                          >
+                            Manage Access
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -158,6 +253,166 @@ const TeamMembers = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Events Modal */}
+      {showEventsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Manage Event Access
+                  </h2>
+                  <p className="text-gray-600 mt-1">
+                    {selectedMember?.firstName} {selectedMember?.lastName}
+                  </p>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-140px)]">
+              {eventsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-gray-500">Loading events...</div>
+                </div>
+              ) : memberEvents.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No events found for this member
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {memberEvents.map((event) => (
+                    <div
+                      key={event._id}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {event.eventName}
+                          </h3>
+                          {event.description && (
+                            <p className="text-gray-600 text-sm mt-1">
+                              {event.description}
+                            </p>
+                          )}
+                          <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                            <span>
+                              {new Date(event.startDate).toLocaleDateString()} -{' '}
+                              {new Date(event.endDate).toLocaleDateString()}
+                            </span>
+                            {event.licenseKey && (
+                              <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">
+                                {event.licenseKey}
+                              </span>
+                            )}
+                          </div>
+                          {event.isRevoked && event.revokedAt && (
+                            <div className="mt-2 text-sm text-red-600">
+                              <span className="font-medium">Revoked:</span>{' '}
+                              {new Date(event.revokedAt).toLocaleString()}
+                              {event.revokedBy && (
+                                <span className="ml-2">
+                                  by {event.revokedBy.firstName} {event.revokedBy.lastName}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="ml-4 flex flex-col gap-2">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${event.isRevoked
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-green-100 text-green-700'
+                              }`}
+                          >
+                            {event.isRevoked ? 'Access Revoked' : 'Active'}
+                          </span>
+                          {event.isRevoked ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => handleRestoreClick(event._id, event.eventName)}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              disabled={actionLoading}
+                            >
+                              Restore Access
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRevokeClick(event._id, event.eventName)}
+                              className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+                              disabled={actionLoading}
+                            >
+                              Revoke Access
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && confirmAction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              Confirm {confirmAction.type === 'revoke' ? 'Revoke' : 'Restore'} Access
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to {confirmAction.type} access for{' '}
+              <span className="font-semibold">{selectedMember?.firstName} {selectedMember?.lastName}</span>{' '}
+              to the event <span className="font-semibold">{confirmAction.eventName}</span>?
+              {confirmAction.type === 'revoke' && (
+                <span className="block mt-2 text-red-600">
+                  The user will no longer be able to see leads from this event.
+                </span>
+              )}
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowConfirmDialog(false);
+                  setConfirmAction(null);
+                }}
+                disabled={actionLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirmAction}
+                className={
+                  confirmAction.type === 'revoke'
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }
+                disabled={actionLoading}
+              >
+                {actionLoading ? 'Processing...' : `Yes, ${confirmAction.type === 'revoke' ? 'Revoke' : 'Restore'}`}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };
