@@ -8,6 +8,8 @@ export interface CreateExhibitorData {
   companyName?: string;
   password?: string;
   address?: string;
+  maxLicenseKeys?: number;
+  maxTotalActivations?: number;
 }
 
 export interface UpdateExhibitorData {
@@ -19,6 +21,8 @@ export interface UpdateExhibitorData {
   password?: string;
   address?: string;
   isActive?: boolean;
+  maxLicenseKeys?: number;
+  maxTotalActivations?: number;
 }
 
 export interface Exhibitor {
@@ -34,6 +38,10 @@ export interface Exhibitor {
   updatedAt: string;
   eventCount?: number;
   keyCount?: number;
+  maxLicenseKeys?: number;
+  maxTotalActivations?: number;
+  currentLicenseKeyCount?: number;
+  currentTotalActivations?: number;
 }
 
 export interface LicenseKey {

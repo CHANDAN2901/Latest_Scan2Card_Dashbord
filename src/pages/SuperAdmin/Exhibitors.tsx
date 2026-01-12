@@ -45,6 +45,8 @@ const SuperAdminExhibitors = () => {
     phone: '',
     password: '',
     address: '',
+    maxLicenseKeys: 20,
+    maxTotalActivations: 100,
   });
   const [editFormData, setEditFormData] = useState({
     firstName: '',
@@ -54,6 +56,8 @@ const SuperAdminExhibitors = () => {
     companyName: '',
     password: '',
     isActive: true,
+    maxLicenseKeys: 20,
+    maxTotalActivations: 100,
   });
 
   // Fetch exhibitors
@@ -94,17 +98,31 @@ const SuperAdminExhibitors = () => {
   }, [activeTab]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+
+    // Convert number inputs to actual numbers
+    const parsedValue = type === 'number' ? (value === '' ? 0 : Number(value)) : value;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: parsedValue,
     });
   };
 
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
+    const { name, value, type } = e.target;
+
+    // Handle different input types
+    let parsedValue: any = value;
+    if (type === 'checkbox') {
+      parsedValue = (e.target as HTMLInputElement).checked;
+    } else if (type === 'number') {
+      parsedValue = value === '' ? 0 : Number(value);
+    }
+
     setEditFormData({
       ...editFormData,
-      [e.target.name]: e.target.name === 'isActive' ? value : e.target.value,
+      [name]: parsedValue,
     });
   };
 
@@ -118,6 +136,8 @@ const SuperAdminExhibitors = () => {
       companyName: exhibitor.companyName || '',
       password: '',
       isActive: exhibitor.isActive,
+      maxLicenseKeys: exhibitor.maxLicenseKeys ?? 20,
+      maxTotalActivations: exhibitor.maxTotalActivations ?? 100,
     });
     setShowEditModal(true);
   };
@@ -138,6 +158,8 @@ const SuperAdminExhibitors = () => {
         phoneNumber: editFormData.phoneNumber || undefined,
         companyName: editFormData.companyName || undefined,
         isActive: editFormData.isActive,
+        maxLicenseKeys: editFormData.maxLicenseKeys,
+        maxTotalActivations: editFormData.maxTotalActivations,
       };
 
       if (editFormData.password) {
@@ -239,6 +261,8 @@ const SuperAdminExhibitors = () => {
         companyName: formData.companyName || undefined,
         password: formData.password || undefined,
         address: formData.address || undefined,
+        maxLicenseKeys: formData.maxLicenseKeys,
+        maxTotalActivations: formData.maxTotalActivations,
       };
 
       const response = await exhibitorAPI.create(exhibitorData);
@@ -252,6 +276,8 @@ const SuperAdminExhibitors = () => {
         phone: '',
         password: '',
         address: '',
+        maxLicenseKeys: 20,
+        maxTotalActivations: 100,
       });
 
       // Refresh exhibitors list
@@ -407,6 +433,40 @@ const SuperAdminExhibitors = () => {
                     placeholder="Enter address"
                   />
                 </div>
+
+                <div>
+                  <label htmlFor="maxLicenseKeys" className="block text-sm font-medium text-gray-700 mb-2">
+                    Max License Keys
+                  </label>
+                  <input
+                    type="number"
+                    id="maxLicenseKeys"
+                    name="maxLicenseKeys"
+                    value={formData.maxLicenseKeys}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                    placeholder="Default: 20"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Maximum number of license keys allowed</p>
+                </div>
+
+                <div>
+                  <label htmlFor="maxTotalActivations" className="block text-sm font-medium text-gray-700 mb-2">
+                    Max Total Activations
+                  </label>
+                  <input
+                    type="number"
+                    id="maxTotalActivations"
+                    name="maxTotalActivations"
+                    value={formData.maxTotalActivations}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                    placeholder="Default: 100"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Maximum total activations across all keys</p>
+                </div>
               </div>
 
               <div className="flex gap-3 mt-6 justify-end">
@@ -442,6 +502,8 @@ const SuperAdminExhibitors = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Events</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keys</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keys Usage</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activations</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -450,13 +512,13 @@ const SuperAdminExhibitors = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {fetchLoading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
                       Loading Organisers...
                     </td>
                   </tr>
                 ) : exhibitors.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
                       No Organisers found
                     </td>
                   </tr>
@@ -493,6 +555,40 @@ const SuperAdminExhibitors = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
                             </Button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {exhibitor.maxLicenseKeys !== undefined ? (
+                            <span className={`${
+                              (exhibitor.currentLicenseKeyCount || 0) >= exhibitor.maxLicenseKeys
+                                ? 'text-red-600'
+                                : (exhibitor.currentLicenseKeyCount || 0) / exhibitor.maxLicenseKeys >= 0.75
+                                ? 'text-yellow-600'
+                                : 'text-green-600'
+                            }`}>
+                              {exhibitor.currentLicenseKeyCount || 0} / {exhibitor.maxLicenseKeys}
+                            </span>
+                          ) : (
+                            <span className="text-blue-600">Unlimited</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {exhibitor.maxTotalActivations !== undefined ? (
+                            <span className={`${
+                              (exhibitor.currentTotalActivations || 0) >= exhibitor.maxTotalActivations
+                                ? 'text-red-600'
+                                : (exhibitor.currentTotalActivations || 0) / exhibitor.maxTotalActivations >= 0.75
+                                ? 'text-yellow-600'
+                                : 'text-green-600'
+                            }`}>
+                              {exhibitor.currentTotalActivations || 0} / {exhibitor.maxTotalActivations}
+                            </span>
+                          ) : (
+                            <span className="text-blue-600">Unlimited</span>
                           )}
                         </div>
                       </td>
@@ -826,6 +922,38 @@ const SuperAdminExhibitors = () => {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                         placeholder="Leave empty to keep current"
                       />
+                    </div>
+
+                    <div>
+                      <label htmlFor="edit-maxLicenseKeys" className="block text-sm font-medium text-gray-700 mb-2">
+                        Max License Keys
+                      </label>
+                      <input
+                        type="number"
+                        id="edit-maxLicenseKeys"
+                        name="maxLicenseKeys"
+                        value={editFormData.maxLicenseKeys}
+                        onChange={handleEditInputChange}
+                        min="0"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Maximum number of license keys allowed</p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="edit-maxTotalActivations" className="block text-sm font-medium text-gray-700 mb-2">
+                        Max Total Activations
+                      </label>
+                      <input
+                        type="number"
+                        id="edit-maxTotalActivations"
+                        name="maxTotalActivations"
+                        value={editFormData.maxTotalActivations}
+                        onChange={handleEditInputChange}
+                        min="0"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Maximum total activations across all keys</p>
                     </div>
 
                     <div className="md:col-span-2">

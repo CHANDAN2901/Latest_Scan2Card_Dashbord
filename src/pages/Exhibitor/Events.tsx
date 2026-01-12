@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout';
 import ConfirmModal from '../../components/ConfirmModal';
 import { eventAPI, type Event, type CreateEventData } from '../../api/event.api';
+import { authAPI } from '../../api/auth.api';
+import { LicenseKeyQuota } from '../../components/LicenseKeyQuota';
+import { LicenseKeyStats } from '../../components/LicenseKeyStats';
 import { Button } from '@/components/ui/button';
 
 const ExhibitorEvents = () => {
@@ -58,6 +61,26 @@ const ExhibitorEvents = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [bulkUploadResults, setBulkUploadResults] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await authAPI.getProfile();
+      // Extract user from the response structure: { user: {...} }
+      setUserProfile(response.user || response);
+    } catch (err: any) {
+      console.error('Failed to load user profile:', err);
+      // Fallback to localStorage if API fails
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUserProfile(JSON.parse(storedUser));
+        } catch (e) {
+          console.error('Failed to parse stored user:', e);
+        }
+      }
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -73,7 +96,28 @@ const ExhibitorEvents = () => {
 
   useEffect(() => {
     fetchEvents();
+    fetchUserProfile();
   }, []);
+
+  // Auto-dismiss success message after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  // Auto-dismiss error message after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -205,6 +249,23 @@ const ExhibitorEvents = () => {
     e.preventDefault();
     if (!selectedEvent) return;
 
+    // Validate against quota before submitting
+    if (userProfile?.maxLicenseKeys !== undefined && userProfile?.maxLicenseKeys !== null) {
+      const remainingKeys = userProfile.maxLicenseKeys - (userProfile.currentLicenseKeyCount || 0);
+      if (remainingKeys <= 0) {
+        setError('You have reached your maximum license key limit. Please contact admin to increase your quota.');
+        return;
+      }
+    }
+
+    if (userProfile?.maxTotalActivations !== undefined && userProfile?.maxTotalActivations !== null) {
+      const remainingActivations = userProfile.maxTotalActivations - (userProfile.currentTotalActivations || 0);
+      if (licenseFormData.maxActivations > remainingActivations) {
+        setError(`You only have ${remainingActivations} activations remaining. Please reduce the max activations or contact admin to increase your quota.`);
+        return;
+      }
+    }
+
     setError('');
     setLoading(true);
 
@@ -213,6 +274,8 @@ const ExhibitorEvents = () => {
       setGeneratedLicenseKey(response.data.licenseKey);
       setSuccess('License key generated successfully!');
       setLicenseFormData({ stallName: '', email: '', maxActivations: 1, expiresAt: '' });
+      // Refresh profile to update quota
+      fetchUserProfile();
     } catch (err: any) {
       setError(err.message || 'Failed to generate license key');
     } finally {
@@ -256,6 +319,7 @@ const ExhibitorEvents = () => {
       setSuccess(`Successfully generated ${response.data.totalGenerated} license keys!`);
       setCsvFile(null);
       fetchEvents();
+      fetchUserProfile(); // Refresh quota
     } catch (err: any) {
       setError(err.message || 'Failed to upload CSV');
     } finally {
@@ -290,13 +354,35 @@ const ExhibitorEvents = () => {
       <div className="p-4 sm:p-6 lg:p-8">
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-            {success}
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] bg-green-50 border border-green-200 text-green-700 px-6 py-3 rounded-lg shadow-lg max-w-md w-full mx-4 animate-fade-in-down">
+            <div className="flex items-center justify-between gap-3">
+              <span>{success}</span>
+              <button
+                onClick={() => setSuccess('')}
+                className="text-green-700 hover:text-green-900 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
         )}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] bg-red-50 border border-red-200 text-red-700 px-6 py-3 rounded-lg shadow-lg max-w-md w-full mx-4 animate-fade-in-down">
+            <div className="flex items-center justify-between gap-3">
+              <span>{error}</span>
+              <button
+                onClick={() => setError('')}
+                className="text-red-700 hover:text-red-900 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
         )}
 
@@ -317,6 +403,16 @@ const ExhibitorEvents = () => {
             {showForm ? 'Cancel' : 'Create Event'}
           </Button>
         </div>
+
+        {/* License Key Usage Stats */}
+        {userProfile && (
+          <LicenseKeyStats
+            maxLicenseKeys={userProfile.maxLicenseKeys}
+            currentLicenseKeyCount={userProfile.currentLicenseKeyCount}
+            maxTotalActivations={userProfile.maxTotalActivations}
+            currentTotalActivations={userProfile.currentTotalActivations}
+          />
+        )}
 
         {/* Create Event Form */}
         {showForm && (
@@ -761,7 +857,19 @@ const ExhibitorEvents = () => {
               </div>
               
               <p className="text-sm text-gray-600 mb-4">Event: <strong>{selectedEvent.eventName}</strong></p>
-              
+
+              {/* Quota Display */}
+              {userProfile && (
+                <div className="mb-4">
+                  <LicenseKeyQuota
+                    maxLicenseKeys={userProfile.maxLicenseKeys}
+                    currentLicenseKeyCount={userProfile.currentLicenseKeyCount}
+                    maxTotalActivations={userProfile.maxTotalActivations}
+                    currentTotalActivations={userProfile.currentTotalActivations}
+                  />
+                </div>
+              )}
+
               {bulkUploadResults && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <p className="text-sm font-medium text-blue-900 mb-2">Bulk Upload Results</p>
