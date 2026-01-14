@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import profileApi, { type UserProfile, type UpdateProfileData, type ChangePasswordData, type SubmitFeedbackData, type FeedbackData } from '../../api/profile.api';
 import authApi from '../../api/auth.api';
+import calendarApi, { type CalendarFeedStatus } from '../../api/calendar.api';
 
 const TeamManagerProfile = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -11,7 +12,12 @@ const TeamManagerProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'feedback'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'feedback' | 'calendar'>('profile');
+
+  // Calendar feed state
+  const [calendarStatus, setCalendarStatus] = useState<CalendarFeedStatus | null>(null);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState<'feed' | 'webcal' | null>(null);
 
   // Profile form state
   const [profileForm, setProfileForm] = useState<UpdateProfileData>({
@@ -43,7 +49,70 @@ const TeamManagerProfile = () => {
     if (activeTab === 'feedback') {
       fetchFeedbackHistory();
     }
+    if (activeTab === 'calendar') {
+      fetchCalendarStatus();
+    }
   }, [activeTab]);
+
+  const fetchCalendarStatus = async () => {
+    try {
+      setCalendarLoading(true);
+      const status = await calendarApi.getStatus();
+      setCalendarStatus(status);
+    } catch (err: any) {
+      console.error('Failed to load calendar status:', err);
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
+  const handleGenerateCalendarToken = async () => {
+    try {
+      setCalendarLoading(true);
+      setError('');
+      const result = await calendarApi.generateToken();
+      setCalendarStatus({
+        enabled: true,
+        hasToken: true,
+        feedUrl: result.feedUrl,
+        webcalUrl: result.webcalUrl,
+      });
+      setSuccessMessage('Calendar feed URL generated successfully!');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to generate calendar token');
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
+  const handleRevokeCalendarToken = async () => {
+    try {
+      setCalendarLoading(true);
+      setError('');
+      await calendarApi.revokeToken();
+      setCalendarStatus({
+        enabled: false,
+        hasToken: false,
+        feedUrl: null,
+        webcalUrl: null,
+      });
+      setSuccessMessage('Calendar feed has been disabled');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to revoke calendar token');
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
+  const copyToClipboard = async (url: string, type: 'feed' | 'webcal') => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedUrl(type);
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch (err) {
+      setError('Failed to copy to clipboard');
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -235,6 +304,19 @@ const TeamManagerProfile = () => {
               }`}
             >
               Feedback
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab('calendar')}
+              className={`rounded-none pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'calendar'
+                  ? 'border-[#854AE6] text-[#854AE6]'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Calendar Sync
             </Button>
           </nav>
         </div>
@@ -569,6 +651,145 @@ const TeamManagerProfile = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Calendar Tab */}
+        {activeTab === 'calendar' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Calendar Subscription</CardTitle>
+              <CardDescription>
+                Sync your team's meetings with your calendar app (Google Calendar, Outlook, Apple Calendar)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {calendarLoading && !calendarStatus ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#854AE6]"></div>
+                </div>
+              ) : calendarStatus?.enabled && calendarStatus?.feedUrl ? (
+                <div className="space-y-6">
+                  {/* Status Badge */}
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Calendar Sync Enabled
+                    </span>
+                  </div>
+
+                  {/* Feed URL */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Calendar Feed URL
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={calendarStatus.feedUrl}
+                          readOnly
+                          className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => copyToClipboard(calendarStatus.feedUrl!, 'feed')}
+                          className="shrink-0"
+                        >
+                          {copiedUrl === 'feed' ? (
+                            <span className="text-green-600">Copied!</span>
+                          ) : (
+                            'Copy'
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Use this URL in Google Calendar or Outlook
+                      </p>
+                    </div>
+
+                    {calendarStatus.webcalUrl && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Webcal URL (for Apple Calendar)
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={calendarStatus.webcalUrl}
+                            readOnly
+                            className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => copyToClipboard(calendarStatus.webcalUrl!, 'webcal')}
+                            className="shrink-0"
+                          >
+                            {copiedUrl === 'webcal' ? (
+                              <span className="text-green-600">Copied!</span>
+                            ) : (
+                              'Copy'
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Instructions */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-blue-800 mb-2">How to add to your calendar:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL → Paste the Feed URL</li>
+                      <li><strong>Outlook:</strong> Add calendar → Subscribe from web → Paste the Feed URL</li>
+                      <li><strong>Apple Calendar:</strong> File → New Calendar Subscription → Paste the Webcal URL</li>
+                    </ul>
+                    <p className="text-xs text-blue-600 mt-2">
+                      Your calendar will automatically sync every 5-30 minutes depending on your calendar app.
+                    </p>
+                  </div>
+
+                  {/* Revoke Button */}
+                  <div className="pt-4 border-t">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleRevokeCalendarToken}
+                      disabled={calendarLoading}
+                      className="text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      {calendarLoading ? 'Disabling...' : 'Disable Calendar Sync'}
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-2">
+                      This will invalidate the current URL. You'll need to generate a new one and update your calendar app.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Calendar Sync Not Enabled</h3>
+                  <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                    Generate a calendar feed URL to automatically sync your team's meetings with your favorite calendar app.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={handleGenerateCalendarToken}
+                    disabled={calendarLoading}
+                  >
+                    {calendarLoading ? 'Generating...' : 'Enable Calendar Sync'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
       </div>
     </DashboardLayout>

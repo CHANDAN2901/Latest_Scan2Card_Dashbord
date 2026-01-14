@@ -35,8 +35,8 @@ const TeamManagerDashboard = () => {
         teamManagerAPI.getMyEvents(),
       ]);
       setStats(statsData);
-      setEvents(eventsData);
-      if (eventsData.length > 0) {
+      setEvents(eventsData || []);
+      if (eventsData?.length > 0) {
         setSelectedEvent(eventsData[0]._id);
       }
     } catch (err: any) {
@@ -132,7 +132,7 @@ const TeamManagerDashboard = () => {
         </div>
 
         {/* Leads Graph */}
-        {events.length > 0 && (
+        {events?.length > 0 && (
           <Card>
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

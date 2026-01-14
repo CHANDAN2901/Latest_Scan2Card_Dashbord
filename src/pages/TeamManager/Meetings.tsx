@@ -75,8 +75,8 @@ const TeamManagerMeetings: React.FC = () => {
           sortOrder
         }
       });
-      setMeetings(res.data.data);
-      setPagination(res.data.pagination);
+      setMeetings(res.data.data || []);
+      setPagination(res.data.pagination || { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPrevPage: false });
     } catch (err) {
       setMeetings([]);
     }
@@ -95,7 +95,7 @@ const TeamManagerMeetings: React.FC = () => {
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#854AE6]"></div>
           </div>
-        ) : meetings.length === 0 ? (
+        ) : !meetings?.length ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No meetings found</h3>
             <p className="text-gray-600 mb-4">No meetings have been scheduled by your team members yet.</p>
