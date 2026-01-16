@@ -87,6 +87,12 @@ export interface BulkLicenseKeyData {
   expiresAt: string;
 }
 
+export interface UpdateLicenseKeyData {
+  stallName?: string;
+  maxActivations?: number;
+  expiresAt?: string;
+}
+
 export const eventAPI = {
   create: async (data: CreateEventData): Promise<{ success: boolean; message: string; data: Event }> => {
     try {
@@ -221,6 +227,28 @@ export const eventAPI = {
     } catch (error: any) {
       if (error.response?.data) {
         throw new Error(error.response.data.message || 'Failed to fetch license keys');
+      }
+      throw error;
+    }
+  },
+
+  updateLicenseKey: async (
+    eventId: string,
+    licenseKeyId: string,
+    data: UpdateLicenseKeyData
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      licenseKey: LicenseKey;
+    };
+  }> => {
+    try {
+      const response = await apiClient.put(`/events/${eventId}/license-keys/${licenseKeyId}`, data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || 'Failed to update license key');
       }
       throw error;
     }

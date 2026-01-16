@@ -16,6 +16,7 @@ import SuperAdminProfile from './pages/SuperAdmin/Profile';
 import ExhibitorDashboard from './pages/Exhibitor/Dashboard';
 import ExhibitorEvents from './pages/Exhibitor/Events';
 import ExhibitorLeads from './pages/Exhibitor/Leads';
+import ExhibitorLicenseKeys from './pages/Exhibitor/LicenseKeys';
 import ExhibitorProfile from './pages/Exhibitor/Profile';
 import TeamManagerDashboard from './pages/TeamManager/Dashboard';
 import TeamManagerTeam from './pages/TeamManager/Team';
@@ -145,6 +146,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['EXHIBITOR']}>
               <ExhibitorLeads />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organiser/license-keys"
+          element={
+            <ProtectedRoute allowedRoles={['EXHIBITOR']}>
+              <ExhibitorLicenseKeys />
             </ProtectedRoute>
           }
         />
