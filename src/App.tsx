@@ -24,6 +24,7 @@ import TeamManagerLeadsPage from './pages/TeamManager/LeadsPage';
 import TeamManagerMeetings from './pages/TeamManager/Meetings';
 import TeamManagerLicenseKeys from './pages/TeamManager/LicenseKeys';
 import TeamManagerProfile from './pages/TeamManager/Profile';
+import TeamManagerCatalogs from './pages/TeamManager/Catalogs';
 import EndUserDashboard from './pages/EndUser/Dashboard';
 import EndUserLeads from './pages/EndUser/Leads';
 import EndUserEvents from './pages/EndUser/Events';
@@ -216,6 +217,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/manager/catalogs"
+          element={
+            <ProtectedRoute allowedRoles={['TEAMMANAGER']}>
+              <TeamManagerCatalogs />
+            </ProtectedRoute>
+          }
+        />
 
         {/* End User Routes */}
                 <Route
@@ -255,6 +264,16 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['ENDUSER']}>
               <EndUserMeetings />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catalog redirect for TEAMMANAGER */}
+        <Route
+          path="/catalog"
+          element={
+            <ProtectedRoute allowedRoles={['TEAMMANAGER']}>
+              <Navigate to="/manager/catalogs" replace />
             </ProtectedRoute>
           }
         />

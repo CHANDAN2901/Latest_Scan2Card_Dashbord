@@ -60,8 +60,8 @@ const EndUserMeetings = () => {
 
   const fetchLeads = async () => {
     try {
-      // Use minimal mode to only get ID and names (reduces response size)
-      const { leads: fetchedLeads } = await leadApi.getAll({ limit: 100, minimal: true });
+      // Only fetch leads for which meeting creation is allowed
+      const { leads: fetchedLeads } = await leadApi.getAll({ limit: 100, minimal: true, canCreateMeeting: true });
       setLeads(fetchedLeads);
     } catch (err: any) {
       console.error('Failed to load leads:', err);

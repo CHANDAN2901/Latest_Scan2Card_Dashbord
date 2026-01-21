@@ -83,6 +83,7 @@ export interface GetLeadsParams {
   search?: string;
   minimal?: boolean;
   licenseKey?: string;
+  canCreateMeeting?: boolean;
 }
 
 export interface ScanCardResponse {

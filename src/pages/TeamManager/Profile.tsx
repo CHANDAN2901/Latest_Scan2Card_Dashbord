@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import profileApi, { type UserProfile, type UpdateProfileData, type ChangePasswordData, type SubmitFeedbackData, type FeedbackData } from '../../api/profile.api';
 import authApi from '../../api/auth.api';
-import calendarApi, { type CalendarFeedStatus } from '../../api/calendar.api';
+import calendarApi, { type CalendarFeedStatus, type CalendarOAuthStatus } from '../../api/calendar.api';
 
 const TeamManagerProfile = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -14,10 +16,14 @@ const TeamManagerProfile = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'feedback' | 'calendar'>('profile');
 
-  // Calendar feed state
+  // Calendar feed state (iCal subscription - fallback)
   const [calendarStatus, setCalendarStatus] = useState<CalendarFeedStatus | null>(null);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<'feed' | 'webcal' | null>(null);
+
+  // Calendar OAuth state (Google/Outlook integration)
+  const [oauthStatus, setOauthStatus] = useState<CalendarOAuthStatus | null>(null);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
   // Profile form state
   const [profileForm, setProfileForm] = useState<UpdateProfileData>({
@@ -44,6 +50,27 @@ const TeamManagerProfile = () => {
     category: 'other',
   });
 
+  // Handle OAuth callback from URL params
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const oauthError = searchParams.get('error');
+    const provider = searchParams.get('provider');
+
+    if (success === 'true' && provider) {
+      setActiveTab('calendar');
+      setSuccessMessage(`${provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'} connected successfully! Meetings will now auto-sync with video links.`);
+      // Clear URL params
+      setSearchParams({});
+      // Refresh OAuth status
+      fetchOAuthStatus();
+    } else if (oauthError) {
+      setActiveTab('calendar');
+      setError(decodeURIComponent(oauthError));
+      // Clear URL params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
   useEffect(() => {
     fetchUserProfile();
     if (activeTab === 'feedback') {
@@ -51,6 +78,7 @@ const TeamManagerProfile = () => {
     }
     if (activeTab === 'calendar') {
       fetchCalendarStatus();
+      fetchOAuthStatus();
     }
   }, [activeTab]);
 
@@ -111,6 +139,67 @@ const TeamManagerProfile = () => {
       setTimeout(() => setCopiedUrl(null), 2000);
     } catch (err) {
       setError('Failed to copy to clipboard');
+    }
+  };
+
+  // OAuth Integration Functions
+  const fetchOAuthStatus = async () => {
+    try {
+      setOauthLoading(true);
+      const status = await calendarApi.getOAuthStatus();
+      setOauthStatus(status);
+    } catch (err: any) {
+      console.error('Failed to load OAuth status:', err);
+      // Don't show error if OAuth is not configured on server
+    } finally {
+      setOauthLoading(false);
+    }
+  };
+
+  const handleConnectGoogle = async () => {
+    try {
+      setOauthLoading(true);
+      setError('');
+      const result = await calendarApi.initiateGoogleOAuth();
+      // Redirect to Google OAuth consent screen
+      window.location.href = result.authUrl;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to initiate Google Calendar connection');
+      setOauthLoading(false);
+    }
+  };
+
+  const handleConnectOutlook = async () => {
+    try {
+      setOauthLoading(true);
+      setError('');
+      const result = await calendarApi.initiateOutlookOAuth();
+      // Redirect to Microsoft OAuth consent screen
+      window.location.href = result.authUrl;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to initiate Outlook Calendar connection');
+      setOauthLoading(false);
+    }
+  };
+
+  const handleDisconnectCalendar = async () => {
+    try {
+      setOauthLoading(true);
+      setError('');
+      await calendarApi.disconnectCalendar();
+      setOauthStatus({
+        isConnected: false,
+        provider: null,
+        email: null,
+        connectedAt: null,
+        isTokenValid: null,
+        availableProviders: oauthStatus?.availableProviders || { google: false, outlook: false },
+      });
+      setSuccessMessage('Calendar disconnected successfully');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to disconnect calendar');
+    } finally {
+      setOauthLoading(false);
     }
   };
 
@@ -655,141 +744,293 @@ const TeamManagerProfile = () => {
 
         {/* Calendar Tab */}
         {activeTab === 'calendar' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Calendar Subscription</CardTitle>
-              <CardDescription>
-                Sync your team's meetings with your calendar app (Google Calendar, Outlook, Apple Calendar)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {calendarLoading && !calendarStatus ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#854AE6]"></div>
-                </div>
-              ) : calendarStatus?.enabled && calendarStatus?.feedUrl ? (
-                <div className="space-y-6">
-                  {/* Status Badge */}
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Calendar Sync Enabled
-                    </span>
+          <div className="space-y-6">
+            {/* OAuth Calendar Integration - Primary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Calendar Integration
+                </CardTitle>
+                <CardDescription>
+                  Connect your Google or Outlook calendar to automatically sync meetings with video conferencing links (Google Meet / Microsoft Teams)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {oauthLoading && !oauthStatus ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#854AE6]"></div>
                   </div>
-
-                  {/* Feed URL */}
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Calendar Feed URL
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={calendarStatus.feedUrl}
-                          readOnly
-                          className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => copyToClipboard(calendarStatus.feedUrl!, 'feed')}
-                          className="shrink-0"
-                        >
-                          {copiedUrl === 'feed' ? (
-                            <span className="text-green-600">Copied!</span>
+                ) : oauthStatus?.isConnected ? (
+                  // Connected State
+                  <div className="space-y-6">
+                    {/* Connection Status */}
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {oauthStatus.provider === 'google' ? (
+                            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+                              <svg className="w-6 h-6" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                              </svg>
+                            </div>
                           ) : (
-                            'Copy'
+                            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+                              <svg className="w-6 h-6" viewBox="0 0 24 24">
+                                <path fill="#F25022" d="M1 1h10v10H1z"/>
+                                <path fill="#00A4EF" d="M1 13h10v10H1z"/>
+                                <path fill="#7FBA00" d="M13 1h10v10H13z"/>
+                                <path fill="#FFB900" d="M13 13h10v10H13z"/>
+                              </svg>
+                            </div>
                           )}
-                        </Button>
+                          <div>
+                            <p className="font-medium text-green-800">
+                              {oauthStatus.provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'} Connected
+                            </p>
+                            <p className="text-sm text-green-600">{oauthStatus.email}</p>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Active
+                        </span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Use this URL in Google Calendar or Outlook
-                      </p>
+                      {oauthStatus.connectedAt && (
+                        <p className="text-xs text-green-600 mt-2">
+                          Connected on {new Date(oauthStatus.connectedAt).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
 
-                    {calendarStatus.webcalUrl && (
+                    {/* Benefits */}
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-purple-800 mb-2">What happens now:</h4>
+                      <ul className="text-sm text-purple-700 space-y-1">
+                        <li className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Meetings scheduled by your team members appear on your calendar
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          {oauthStatus.provider === 'google' ? 'Google Meet' : 'Microsoft Teams'} links are auto-generated
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Your availability is automatically blocked
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Calendar invites are sent from your account
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Disconnect Button */}
+                    <div className="pt-4 border-t">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleDisconnectCalendar}
+                        disabled={oauthLoading}
+                        className="text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        {oauthLoading ? 'Disconnecting...' : 'Disconnect Calendar'}
+                      </Button>
+                      <p className="text-xs text-gray-500 mt-2">
+                        This will revoke calendar access. New meetings won't be synced to your calendar.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  // Not Connected State
+                  <div className="space-y-6">
+                    {/* Info Banner */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-blue-800 mb-2">Why connect your calendar?</h4>
+                      <ul className="text-sm text-blue-700 space-y-1">
+                        <li>• Meetings appear directly on your calendar (you own the events)</li>
+                        <li>• Auto-generated Google Meet or Microsoft Teams video links</li>
+                        <li>• Your availability is automatically blocked</li>
+                        <li>• Calendar invites sent from your account</li>
+                      </ul>
+                    </div>
+
+                    {/* Connect Buttons */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {/* Google Calendar */}
+                      <button
+                        onClick={handleConnectGoogle}
+                        disabled={oauthLoading || !oauthStatus?.availableProviders?.google}
+                        className="flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-[#854AE6] hover:bg-purple-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <svg className="w-8 h-8" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        <div className="text-left">
+                          <p className="font-medium text-gray-900">Google Calendar</p>
+                          <p className="text-xs text-gray-500">With Google Meet links</p>
+                        </div>
+                      </button>
+
+                      {/* Outlook Calendar */}
+                      <button
+                        onClick={handleConnectOutlook}
+                        disabled={oauthLoading || !oauthStatus?.availableProviders?.outlook}
+                        className="flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-[#854AE6] hover:bg-purple-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <svg className="w-8 h-8" viewBox="0 0 24 24">
+                          <path fill="#F25022" d="M1 1h10v10H1z"/>
+                          <path fill="#00A4EF" d="M1 13h10v10H1z"/>
+                          <path fill="#7FBA00" d="M13 1h10v10H13z"/>
+                          <path fill="#FFB900" d="M13 13h10v10H13z"/>
+                        </svg>
+                        <div className="text-left">
+                          <p className="font-medium text-gray-900">Outlook Calendar</p>
+                          <p className="text-xs text-gray-500">With Microsoft Teams links</p>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Provider Not Configured Notice */}
+                    {oauthStatus && !oauthStatus.availableProviders?.google && !oauthStatus.availableProviders?.outlook && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-sm text-yellow-800">
+                          Calendar integration is not configured on the server. Please contact your administrator.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* iCal Feed - Fallback Option */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-gray-700">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  Calendar Feed (Alternative)
+                </CardTitle>
+                <CardDescription>
+                  Subscribe to a read-only calendar feed. Note: This doesn't support video link generation.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {calendarLoading && !calendarStatus ? (
+                  <div className="flex items-center justify-center py-6">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#854AE6]"></div>
+                  </div>
+                ) : calendarStatus?.enabled && calendarStatus?.feedUrl ? (
+                  <div className="space-y-4">
+                    {/* Status Badge */}
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Feed Enabled
+                      </span>
+                    </div>
+
+                    {/* Feed URLs */}
+                    <div className="space-y-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Webcal URL (for Apple Calendar)
-                        </label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Feed URL</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
-                            value={calendarStatus.webcalUrl}
+                            value={calendarStatus.feedUrl}
                             readOnly
-                            className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600"
+                            className="flex-1 px-2 py-1.5 bg-gray-50 border border-gray-300 rounded text-xs text-gray-600"
                           />
                           <Button
                             type="button"
                             variant="outline"
-                            onClick={() => copyToClipboard(calendarStatus.webcalUrl!, 'webcal')}
-                            className="shrink-0"
+                            size="sm"
+                            onClick={() => copyToClipboard(calendarStatus.feedUrl!, 'feed')}
+                            className="shrink-0 text-xs"
                           >
-                            {copiedUrl === 'webcal' ? (
-                              <span className="text-green-600">Copied!</span>
-                            ) : (
-                              'Copy'
-                            )}
+                            {copiedUrl === 'feed' ? 'Copied!' : 'Copy'}
                           </Button>
                         </div>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Instructions */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-blue-800 mb-2">How to add to your calendar:</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li><strong>Google Calendar:</strong> Settings → Add calendar → From URL → Paste the Feed URL</li>
-                      <li><strong>Outlook:</strong> Add calendar → Subscribe from web → Paste the Feed URL</li>
-                      <li><strong>Apple Calendar:</strong> File → New Calendar Subscription → Paste the Webcal URL</li>
-                    </ul>
-                    <p className="text-xs text-blue-600 mt-2">
-                      Your calendar will automatically sync every 5-30 minutes depending on your calendar app.
-                    </p>
-                  </div>
+                      {calendarStatus.webcalUrl && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Webcal URL (Apple)</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={calendarStatus.webcalUrl}
+                              readOnly
+                              className="flex-1 px-2 py-1.5 bg-gray-50 border border-gray-300 rounded text-xs text-gray-600"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyToClipboard(calendarStatus.webcalUrl!, 'webcal')}
+                              className="shrink-0 text-xs"
+                            >
+                              {copiedUrl === 'webcal' ? 'Copied!' : 'Copy'}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Revoke Button */}
-                  <div className="pt-4 border-t">
+                    {/* Disable Button */}
                     <Button
                       type="button"
                       variant="outline"
+                      size="sm"
                       onClick={handleRevokeCalendarToken}
                       disabled={calendarLoading}
-                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      className="text-red-600 border-red-300 hover:bg-red-50 text-xs"
                     >
-                      {calendarLoading ? 'Disabling...' : 'Disable Calendar Sync'}
+                      {calendarLoading ? 'Disabling...' : 'Disable Feed'}
                     </Button>
-                    <p className="text-xs text-gray-500 mt-2">
-                      This will invalidate the current URL. You'll need to generate a new one and update your calendar app.
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between py-2">
+                    <p className="text-sm text-gray-500">
+                      Generate a feed URL for read-only calendar subscription
                     </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateCalendarToken}
+                      disabled={calendarLoading}
+                    >
+                      {calendarLoading ? 'Generating...' : 'Enable Feed'}
+                    </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Calendar Sync Not Enabled</h3>
-                  <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                    Generate a calendar feed URL to automatically sync your team's meetings with your favorite calendar app.
-                  </p>
-                  <Button
-                    type="button"
-                    onClick={handleGenerateCalendarToken}
-                    disabled={calendarLoading}
-                  >
-                    {calendarLoading ? 'Generating...' : 'Enable Calendar Sync'}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </DashboardLayout>

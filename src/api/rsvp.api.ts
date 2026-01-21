@@ -16,6 +16,7 @@ export interface Rsvp {
       city?: string;
     };
     isActive: boolean;
+    isTrialEvent?: boolean;
   };
   userId: {
     _id: string;
@@ -35,6 +36,12 @@ export interface Rsvp {
   status: number;
   isActive: boolean;
   isDeleted: boolean;
+  isRevoked: boolean;
+  stallName?: string; // Added from license key matching
+  // Meeting permission
+  canCreateMeeting: boolean;
+  // Calendar permission - allows user to use their own Google/Outlook calendar
+  canUseOwnCalendar: boolean;
   createdAt: string;
   updatedAt: string;
 }

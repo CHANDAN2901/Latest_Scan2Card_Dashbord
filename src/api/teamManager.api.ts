@@ -100,6 +100,41 @@ export interface MemberEvent {
     email: string;
   };
   licenseKey?: string;
+  // Meeting permission fields
+  canCreateMeeting: boolean;
+  meetingPermissionRevokedAt?: string;
+  meetingPermissionRevokedBy?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  // Calendar permission fields
+  canUseOwnCalendar: boolean;
+  calendarPermissionGrantedAt?: string;
+  calendarPermissionGrantedBy?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
+// License key meeting permission status
+export interface LicenseKeyMeetingPermissionStatus {
+  licenseKey: string;
+  allowTeamMeetings: boolean;
+  totalMembers: number;
+  revokedMembers: number;
+  activeMembers: number;
+  meetingPermissionUpdatedAt?: string;
+}
+
+// Bulk meeting permission response
+export interface BulkMeetingPermissionResponse {
+  modifiedCount: number;
+  licenseKey: string;
+  message: string;
 }
 
 const teamManagerAPI = {
@@ -161,6 +196,72 @@ const teamManagerAPI = {
   // Restore event access for a team member
   restoreEventAccess: async (memberId: string, eventId: string) => {
     const response = await axiosInstance.patch<{ success: boolean; message: string }>(`/team-manager/team/member/${memberId}/restore-access`, {
+      eventId,
+    });
+    return response.data;
+  },
+
+  // ==========================================
+  // MEETING PERMISSION MANAGEMENT APIs
+  // ==========================================
+
+  // Revoke meeting permission for a single team member
+  revokeMeetingPermission: async (memberId: string, eventId: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string }>(`/team-manager/team/member/${memberId}/revoke-meeting-permission`, {
+      eventId,
+    });
+    return response.data;
+  },
+
+  // Restore meeting permission for a single team member
+  restoreMeetingPermission: async (memberId: string, eventId: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string }>(`/team-manager/team/member/${memberId}/restore-meeting-permission`, {
+      eventId,
+    });
+    return response.data;
+  },
+
+  // Bulk revoke meeting permission for all team members by license key
+  bulkRevokeMeetingPermission: async (eventId: string, licenseKey: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string; data: BulkMeetingPermissionResponse }>('/team-manager/license-key/bulk-revoke-meeting-permission', {
+      eventId,
+      licenseKey,
+    });
+    return response.data;
+  },
+
+  // Bulk restore meeting permission for all team members by license key
+  bulkRestoreMeetingPermission: async (eventId: string, licenseKey: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string; data: BulkMeetingPermissionResponse }>('/team-manager/license-key/bulk-restore-meeting-permission', {
+      eventId,
+      licenseKey,
+    });
+    return response.data;
+  },
+
+  // Get license key meeting permission status
+  getLicenseKeyMeetingPermissionStatus: async (eventId: string, licenseKey: string) => {
+    const response = await axiosInstance.get<{ success: boolean; data: LicenseKeyMeetingPermissionStatus }>('/team-manager/license-key/meeting-permission-status', {
+      params: { eventId, licenseKey },
+    });
+    return response.data.data;
+  },
+
+  // ==========================================
+  // CALENDAR PERMISSION MANAGEMENT APIs
+  // ==========================================
+
+  // Grant calendar permission to a team member (allows them to use their own calendar)
+  grantCalendarPermission: async (memberId: string, eventId: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string }>(`/team-manager/team/member/${memberId}/grant-calendar-permission`, {
+      eventId,
+    });
+    return response.data;
+  },
+
+  // Revoke calendar permission from a team member
+  revokeCalendarPermission: async (memberId: string, eventId: string) => {
+    const response = await axiosInstance.patch<{ success: boolean; message: string }>(`/team-manager/team/member/${memberId}/revoke-calendar-permission`, {
       eventId,
     });
     return response.data;
