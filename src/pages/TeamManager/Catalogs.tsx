@@ -48,6 +48,7 @@ const TeamManagerCatalogs: React.FC = () => {
   });
   const [availableLicenseKeys, setAvailableLicenseKeys] = useState<AvailableLicenseKey[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [expiryFilter, setExpiryFilter] = useState<"all" | "active" | "expired">("all");
 
   // Form state
   const [formData, setFormData] = useState<CreateCatalogInput>({
@@ -148,6 +149,7 @@ const TeamManagerCatalogs: React.FC = () => {
 
   const openAssignDrawer = async (catalog: Catalog) => {
     setAssignDrawer({ isOpen: true, catalog });
+    setExpiryFilter("all");
     try {
       const keys = await catalogAPI.getAvailableLicenseKeys(catalog._id);
       setAvailableLicenseKeys(keys);
@@ -164,7 +166,16 @@ const TeamManagerCatalogs: React.FC = () => {
   const closeAssignDrawer = () => {
     setAssignDrawer({ isOpen: false, catalog: null });
     setSelectedKeys(new Set());
+    setExpiryFilter("all");
   };
+
+  // Filter license keys based on expiry filter
+  const filteredLicenseKeys = availableLicenseKeys.filter((lk) => {
+    if (expiryFilter === "all") return true;
+    if (expiryFilter === "active") return !lk.isExpired;
+    if (expiryFilter === "expired") return lk.isExpired;
+    return true;
+  });
 
   const handleFormChange = (field: keyof CreateCatalogInput, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -219,14 +230,17 @@ const TeamManagerCatalogs: React.FC = () => {
     setSaving(false);
   };
 
-  const handleDelete = async () => {
-    if (!drawer.catalog) return;
+  const handleDelete = async (catalogId?: string) => {
+    const idToDelete = catalogId || drawer.catalog?._id;
+    if (!idToDelete) return;
     if (!window.confirm("Are you sure you want to delete this catalog?")) return;
 
     setDeleting(true);
     try {
-      await catalogAPI.deleteCatalog(drawer.catalog._id);
-      closeDrawer();
+      await catalogAPI.deleteCatalog(idToDelete);
+      if (drawer.isOpen) {
+        closeDrawer();
+      }
       fetchCatalogs(currentPage);
     } catch (err: any) {
       console.error("Error deleting catalog:", err);
@@ -450,6 +464,16 @@ const TeamManagerCatalogs: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                         </a>
+                        <button
+                          onClick={() => handleDelete(catalog._id)}
+                          disabled={deleting}
+                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                          title="Delete Catalog"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -699,7 +723,7 @@ const TeamManagerCatalogs: React.FC = () => {
               <div>
                 {drawer.mode === "view" && drawer.catalog && (
                   <button
-                    onClick={handleDelete}
+                    onClick={() => handleDelete()}
                     disabled={deleting}
                     className="px-4 py-2 text-red-600 border-2 border-red-200 rounded-lg font-medium hover:bg-red-50 transition-all disabled:opacity-50"
                   >
@@ -781,45 +805,76 @@ const TeamManagerCatalogs: React.FC = () => {
                 Select the license keys where this catalog should be available. Team members using these keys will be able to send this catalog to leads.
               </p>
 
-              {availableLicenseKeys.length === 0 ? (
+              {/* Expiry Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Filter:</span>
+                <select
+                  value={expiryFilter}
+                  onChange={(e) => setExpiryFilter(e.target.value as "all" | "active" | "expired")}
+                  className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#854AE6]/20 focus:border-[#854AE6]"
+                >
+                  <option value="all">All Keys ({availableLicenseKeys.length})</option>
+                  <option value="active">Active ({availableLicenseKeys.filter(k => !k.isExpired).length})</option>
+                  <option value="expired">Expired ({availableLicenseKeys.filter(k => k.isExpired).length})</option>
+                </select>
+              </div>
+
+              {filteredLicenseKeys.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  No license keys available
+                  {availableLicenseKeys.length === 0 ? "No license keys available" : "No license keys match the filter"}
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {availableLicenseKeys.map((lk) => {
+                  {filteredLicenseKeys.map((lk) => {
                     const keyId = `${lk.eventId}-${lk.licenseKey}`;
                     const isSelected = selectedKeys.has(keyId);
+                    const isExpired = lk.isExpired;
 
                     return (
                       <div
                         key={keyId}
-                        onClick={() => handleKeyToggle(lk.eventId, lk.licenseKey)}
-                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                          isSelected
-                            ? "border-[#854AE6] bg-[#854AE6]/5"
-                            : "border-gray-200 hover:border-gray-300"
+                        onClick={() => !isExpired && handleKeyToggle(lk.eventId, lk.licenseKey)}
+                        className={`p-4 border-2 rounded-lg transition-all ${
+                          isExpired
+                            ? "border-gray-100 bg-gray-50 cursor-not-allowed opacity-60"
+                            : isSelected
+                              ? "border-[#854AE6] bg-[#854AE6]/5 cursor-pointer"
+                              : "border-gray-200 hover:border-gray-300 cursor-pointer"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                              isSelected
-                                ? "bg-[#854AE6] border-[#854AE6]"
-                                : "border-gray-300"
+                              isExpired
+                                ? "border-gray-200 bg-gray-100"
+                                : isSelected
+                                  ? "bg-[#854AE6] border-[#854AE6]"
+                                  : "border-gray-300"
                             }`}
                           >
-                            {isSelected && (
+                            {isSelected && !isExpired && (
                               <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
                           </div>
                           <div className="flex-1">
-                            <p className="font-medium text-gray-900">{lk.licenseKey}</p>
-                            <p className="text-sm text-gray-600">{lk.eventName}</p>
+                            <div className="flex items-center gap-2">
+                              <p className={`font-medium ${isExpired ? "text-gray-400" : "text-gray-900"}`}>{lk.licenseKey}</p>
+                              {isExpired && (
+                                <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-600">
+                                  Expired
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-sm ${isExpired ? "text-gray-400" : "text-gray-600"}`}>{lk.eventName}</p>
                             {lk.stallName && (
-                              <p className="text-xs text-gray-500">Stall: {lk.stallName}</p>
+                              <p className={`text-xs ${isExpired ? "text-gray-300" : "text-gray-500"}`}>Stall: {lk.stallName}</p>
+                            )}
+                            {lk.expiresAt && (
+                              <p className={`text-xs mt-1 ${isExpired ? "text-gray-300" : "text-gray-400"}`}>
+                                {isExpired ? "Expired" : "Expires"}: {new Date(lk.expiresAt).toLocaleDateString()}
+                              </p>
                             )}
                           </div>
                         </div>

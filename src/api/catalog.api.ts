@@ -91,6 +91,9 @@ export interface AvailableLicenseKey {
   licenseKey: string;
   stallName: string;
   isAssigned: boolean;
+  expiresAt: string | null;
+  isExpired: boolean;
+  createdAt: string | null;
 }
 
 // Template preview data
