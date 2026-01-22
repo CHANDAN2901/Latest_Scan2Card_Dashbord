@@ -605,7 +605,7 @@ const ExhibitorLeads = () => {
                   </div>
 
                   {/* Address Information Card */}
-                  {(selectedLead.details?.address || selectedLead.details?.city || selectedLead.details?.country) && (
+                  {(selectedLead.details?.address || selectedLead.details?.city || selectedLead.details?.zipcode || selectedLead.details?.country) && (
                     <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
                       <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-100">Address</h3>
                       <div className="space-y-3.5">
@@ -623,6 +623,15 @@ const ExhibitorLeads = () => {
                             <p className="text-xs font-medium text-gray-500 mb-1">City</p>
                             <p className="text-sm text-gray-900">
                               {selectedLead.details.city}
+                            </p>
+                          </div>
+                        )}
+
+                        {selectedLead.details?.zipcode && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 mb-1">Zipcode</p>
+                            <p className="text-sm text-gray-900">
+                              {selectedLead.details.zipcode}
                             </p>
                           </div>
                         )}

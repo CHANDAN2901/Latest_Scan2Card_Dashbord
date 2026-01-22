@@ -208,9 +208,9 @@ const catalogAPI = {
   },
 
   // Get catalogs for a specific license key (for lead details)
-  getCatalogsForLicenseKey: async (eventId: string, licenseKey: string): Promise<Catalog[]> => {
+  getCatalogsForLicenseKey: async (licenseKey: string): Promise<Catalog[]> => {
     const response = await axiosInstance.get<{ success: boolean; data: Catalog[] }>(
-      `/catalogs/by-license-key/${eventId}/${licenseKey}`
+      `/catalogs/by-license-key/${licenseKey}`
     );
     return response.data.data;
   },

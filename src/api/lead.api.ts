@@ -12,6 +12,7 @@ export interface LeadDetails {
   website?: string;
   address?: string;
   city?: string;
+  zipcode?: string;
   country?: string;
   notes?: string;
 }
