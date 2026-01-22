@@ -17,6 +17,7 @@ import ExhibitorDashboard from './pages/Exhibitor/Dashboard';
 import ExhibitorEvents from './pages/Exhibitor/Events';
 import ExhibitorLeads from './pages/Exhibitor/Leads';
 import ExhibitorLicenseKeys from './pages/Exhibitor/LicenseKeys';
+import ExhibitorInvitations from './pages/Exhibitor/Invitations';
 import ExhibitorProfile from './pages/Exhibitor/Profile';
 import TeamManagerDashboard from './pages/TeamManager/Dashboard';
 import TeamManagerTeam from './pages/TeamManager/Team';
@@ -155,6 +156,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['EXHIBITOR']}>
               <ExhibitorLicenseKeys />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organiser/invitations"
+          element={
+            <ProtectedRoute allowedRoles={['EXHIBITOR']}>
+              <ExhibitorInvitations />
             </ProtectedRoute>
           }
         />
