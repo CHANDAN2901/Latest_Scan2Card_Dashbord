@@ -74,6 +74,10 @@ const TeamManagerCatalogs: React.FC = () => {
     },
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const whatsappTemplateRef = useRef<HTMLTextAreaElement>(null);
+  const emailSubjectRef = useRef<HTMLInputElement>(null);
+  const emailBodyRef = useRef<HTMLTextAreaElement>(null);
+  const [activeField, setActiveField] = useState<"whatsapp" | "emailSubject" | "emailBody" | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -356,6 +360,73 @@ const TeamManagerCatalogs: React.FC = () => {
     };
     return colors[category] || colors.other;
   };
+
+  const placeholders = [
+    { key: "leadName", label: "Lead Name" },
+    { key: "leadEmail", label: "Lead Email" },
+    { key: "leadCompany", label: "Lead Company" },
+    { key: "catalogName", label: "Catalog Name" },
+    { key: "docLink", label: "Doc Link" },
+    { key: "eventName", label: "Event Name" },
+    { key: "stallName", label: "Stall Name" },
+  ];
+
+  const insertPlaceholder = (placeholder: string) => {
+    const placeholderText = `{{${placeholder}}}`;
+
+    if (activeField === "whatsapp" && whatsappTemplateRef.current) {
+      const textarea = whatsappTemplateRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newValue = formData.whatsappTemplate.substring(0, start) + placeholderText + formData.whatsappTemplate.substring(end);
+      handleFormChange("whatsappTemplate", newValue);
+      // Restore cursor position after the inserted placeholder
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + placeholderText.length, start + placeholderText.length);
+      }, 0);
+    } else if (activeField === "emailSubject" && emailSubjectRef.current) {
+      const input = emailSubjectRef.current;
+      const start = input.selectionStart || 0;
+      const end = input.selectionEnd || 0;
+      const newValue = formData.emailTemplate.subject.substring(0, start) + placeholderText + formData.emailTemplate.subject.substring(end);
+      handleEmailTemplateChange("subject", newValue);
+      setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(start + placeholderText.length, start + placeholderText.length);
+      }, 0);
+    } else if (activeField === "emailBody" && emailBodyRef.current) {
+      const textarea = emailBodyRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newValue = formData.emailTemplate.body.substring(0, start) + placeholderText + formData.emailTemplate.body.substring(end);
+      handleEmailTemplateChange("body", newValue);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + placeholderText.length, start + placeholderText.length);
+      }, 0);
+    }
+  };
+
+  const PlaceholderChips: React.FC<{ variant?: "whatsapp" | "email" }> = ({ variant = "whatsapp" }) => (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {placeholders.map((p) => (
+        <button
+          key={p.key}
+          type="button"
+          onClick={() => insertPlaceholder(p.key)}
+          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+            variant === "whatsapp"
+              ? "bg-green-100 text-green-700 hover:bg-green-200 border border-green-300"
+              : "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300"
+          }`}
+          title={`Click to insert {{${p.key}}}`}
+        >
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <DashboardLayout>
@@ -715,15 +786,20 @@ const TeamManagerCatalogs: React.FC = () => {
                   WhatsApp Template
                 </h3>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-xs text-green-700 mb-2">
-                    Available placeholders: {`{{leadName}}, {{leadEmail}}, {{leadCompany}}, {{catalogName}}, {{docLink}}, {{eventName}}, {{stallName}}`}
-                  </p>
+                  {drawer.mode !== "view" && (
+                    <div className="mb-3">
+                      <p className="text-xs text-green-700 mb-2 font-medium">Click to insert placeholder:</p>
+                      <PlaceholderChips variant="whatsapp" />
+                    </div>
+                  )}
                   {drawer.mode === "view" ? (
                     <p className="text-gray-900 font-medium py-3 px-4 bg-white rounded-lg whitespace-pre-wrap">{formData.whatsappTemplate}</p>
                   ) : (
                     <textarea
+                      ref={whatsappTemplateRef}
                       value={formData.whatsappTemplate}
                       onChange={(e) => handleFormChange("whatsappTemplate", e.target.value)}
+                      onFocus={() => setActiveField("whatsapp")}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-500/10 outline-none transition-all resize-none"
                       placeholder="Hi {{leadName}}, here's our catalog..."
                       rows={4}
@@ -742,18 +818,23 @@ const TeamManagerCatalogs: React.FC = () => {
                   Email Template
                 </h3>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
-                  <p className="text-xs text-blue-700">
-                    Available placeholders: {`{{leadName}}, {{leadEmail}}, {{leadCompany}}, {{catalogName}}, {{docLink}}, {{eventName}}, {{stallName}}`}
-                  </p>
+                  {drawer.mode !== "view" && (
+                    <div>
+                      <p className="text-xs text-blue-700 mb-2 font-medium">Click to insert placeholder:</p>
+                      <PlaceholderChips variant="email" />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">Subject *</label>
                     {drawer.mode === "view" ? (
                       <p className="text-gray-900 font-medium py-3 px-4 bg-white rounded-lg">{formData.emailTemplate.subject}</p>
                     ) : (
                       <input
+                        ref={emailSubjectRef}
                         type="text"
                         value={formData.emailTemplate.subject}
                         onChange={(e) => handleEmailTemplateChange("subject", e.target.value)}
+                        onFocus={() => setActiveField("emailSubject")}
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all"
                         placeholder="Email subject"
                         maxLength={200}
@@ -766,8 +847,10 @@ const TeamManagerCatalogs: React.FC = () => {
                       <p className="text-gray-900 font-medium py-3 px-4 bg-white rounded-lg whitespace-pre-wrap">{formData.emailTemplate.body}</p>
                     ) : (
                       <textarea
+                        ref={emailBodyRef}
                         value={formData.emailTemplate.body}
                         onChange={(e) => handleEmailTemplateChange("body", e.target.value)}
+                        onFocus={() => setActiveField("emailBody")}
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all resize-none"
                         placeholder="Email body content..."
                         rows={6}
