@@ -1,14 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import catalogAPI from "../../api/catalog.api";
 import type {
   Catalog,
   CatalogCategory,
   CategoryOption,
   AvailableLicenseKey,
-  CreateCatalogInput,
-  UpdateCatalogInput,
 } from "../../api/catalog.api";
 import DashboardLayout from '../../components/DashboardLayout';
+
+// Form data interface (separate from API input)
+interface CatalogFormData {
+  name: string;
+  description: string;
+  category: CatalogCategory;
+  file: File | null;
+  whatsappTemplate: string;
+  emailTemplate: {
+    subject: string;
+    body: string;
+  };
+}
 
 interface DrawerState {
   isOpen: boolean;
@@ -51,17 +62,18 @@ const TeamManagerCatalogs: React.FC = () => {
   const [expiryFilter, setExpiryFilter] = useState<"all" | "active" | "expired">("all");
 
   // Form state
-  const [formData, setFormData] = useState<CreateCatalogInput>({
+  const [formData, setFormData] = useState<CatalogFormData>({
     name: "",
     description: "",
     category: "product",
-    docLink: "",
+    file: null,
     whatsappTemplate: "",
     emailTemplate: {
       subject: "",
       body: "",
     },
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -117,13 +129,16 @@ const TeamManagerCatalogs: React.FC = () => {
       name: "",
       description: "",
       category: "product",
-      docLink: "",
+      file: null,
       whatsappTemplate: "Hi {{leadName}},\n\nPlease find our catalog here: {{docLink}}\n\nBest regards",
       emailTemplate: {
         subject: "{{catalogName}} - Catalog from {{eventName}}",
         body: "Dear {{leadName}},\n\nThank you for visiting our booth at {{eventName}}.\n\nPlease find our {{catalogName}} attached: {{docLink}}\n\nBest regards,\n{{stallName}}",
       },
     });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setDrawer({ isOpen: true, catalog: null, mode: "create" });
   };
 
@@ -133,10 +148,13 @@ const TeamManagerCatalogs: React.FC = () => {
       name: catalog.name,
       description: catalog.description,
       category: catalog.category,
-      docLink: catalog.docLink,
+      file: null,
       whatsappTemplate: catalog.whatsappTemplate,
       emailTemplate: catalog.emailTemplate,
     });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const openEditDrawer = () => {
@@ -177,15 +195,20 @@ const TeamManagerCatalogs: React.FC = () => {
     return true;
   });
 
-  const handleFormChange = (field: keyof CreateCatalogInput, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleFormChange = (field: keyof CatalogFormData, value: string | File | null) => {
+    setFormData((prev: CatalogFormData) => ({ ...prev, [field]: value }));
   };
 
   const handleEmailTemplateChange = (field: "subject" | "body", value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: CatalogFormData) => ({
       ...prev,
       emailTemplate: { ...prev.emailTemplate, [field]: value },
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev: CatalogFormData) => ({ ...prev, file }));
   };
 
   const handleSave = async () => {
@@ -193,8 +216,8 @@ const TeamManagerCatalogs: React.FC = () => {
       alert("Name is required");
       return;
     }
-    if (!formData.docLink.trim()) {
-      alert("Document link is required");
+    if (drawer.mode === "create" && !formData.file) {
+      alert("Document file is required");
       return;
     }
     if (!formData.whatsappTemplate.trim()) {
@@ -209,17 +232,23 @@ const TeamManagerCatalogs: React.FC = () => {
     setSaving(true);
     try {
       if (drawer.mode === "create") {
-        await catalogAPI.createCatalog(formData);
-      } else if (drawer.mode === "edit" && drawer.catalog) {
-        const updateData: UpdateCatalogInput = {
+        await catalogAPI.createCatalog({
           name: formData.name,
           description: formData.description,
           category: formData.category,
-          docLink: formData.docLink,
+          file: formData.file!,
           whatsappTemplate: formData.whatsappTemplate,
           emailTemplate: formData.emailTemplate,
-        };
-        await catalogAPI.updateCatalog(drawer.catalog._id, updateData);
+        });
+      } else if (drawer.mode === "edit" && drawer.catalog) {
+        await catalogAPI.updateCatalog(drawer.catalog._id, {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+          file: formData.file || undefined,
+          whatsappTemplate: formData.whatsappTemplate,
+          emailTemplate: formData.emailTemplate,
+        });
       }
       closeDrawer();
       fetchCatalogs(currentPage);
@@ -622,24 +651,56 @@ const TeamManagerCatalogs: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">Document Link *</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                      Document File {drawer.mode === "create" ? "*" : "(Upload new to replace)"}
+                    </label>
                     {drawer.mode === "view" ? (
-                      <a
-                        href={formData.docLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#854AE6] hover:underline font-medium py-3 px-4 bg-gray-50 rounded-lg block truncate"
-                      >
-                        {formData.docLink}
-                      </a>
+                      <div className="py-3 px-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <svg className="w-8 h-8 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-gray-900 font-medium truncate">{drawer.catalog?.originalFileName}</p>
+                            {drawer.catalog?.fileSize && (
+                              <p className="text-xs text-gray-500">
+                                {(drawer.catalog.fileSize / 1024).toFixed(1)} KB
+                              </p>
+                            )}
+                          </div>
+                          <a
+                            href={drawer.catalog?.docLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 text-sm bg-[#854AE6] text-white rounded-lg hover:bg-[#6F33C5] transition-colors"
+                          >
+                            View
+                          </a>
+                        </div>
+                      </div>
                     ) : (
-                      <input
-                        type="url"
-                        value={formData.docLink}
-                        onChange={(e) => handleFormChange("docLink", e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#854AE6] focus:ring-2 focus:ring-[#854AE6]/10 outline-none transition-all"
-                        placeholder="https://example.com/catalog.pdf"
-                      />
+                      <div className="space-y-2">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          onChange={handleFileChange}
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.txt,.csv"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#854AE6] focus:ring-2 focus:ring-[#854AE6]/10 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#854AE6] file:text-white hover:file:bg-[#6F33C5] file:cursor-pointer"
+                        />
+                        {formData.file && (
+                          <p className="text-sm text-gray-600">
+                            Selected: {formData.file.name} ({(formData.file.size / 1024).toFixed(1)} KB)
+                          </p>
+                        )}
+                        {drawer.mode === "edit" && drawer.catalog && !formData.file && (
+                          <p className="text-sm text-gray-500">
+                            Current file: {drawer.catalog.originalFileName}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400">
+                          Supported: PDF, DOC, DOCX, XLS, XLSX, Images (max 10MB)
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>

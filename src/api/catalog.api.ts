@@ -23,6 +23,10 @@ export interface Catalog {
   description: string;
   category: CatalogCategory;
   docLink: string;
+  s3Key: string;
+  originalFileName: string;
+  fileSize?: number;
+  contentType?: string;
   whatsappTemplate: string;
   emailTemplate: EmailTemplate;
   assignedLicenseKeys: AssignedLicenseKey[];
@@ -37,7 +41,7 @@ export interface CreateCatalogInput {
   name: string;
   description?: string;
   category: CatalogCategory;
-  docLink: string;
+  file: File;
   whatsappTemplate: string;
   emailTemplate: EmailTemplate;
 }
@@ -47,7 +51,7 @@ export interface UpdateCatalogInput {
   name?: string;
   description?: string;
   category?: CatalogCategory;
-  docLink?: string;
+  file?: File;
   whatsappTemplate?: string;
   emailTemplate?: EmailTemplate;
   isActive?: boolean;
@@ -120,7 +124,25 @@ const catalogAPI = {
 
   // Create a new catalog
   createCatalog: async (data: CreateCatalogInput): Promise<Catalog> => {
-    const response = await axiosInstance.post<{ success: boolean; data: Catalog; message: string }>('/catalogs', data);
+    const formData = new FormData();
+    formData.append('file', data.file);
+    formData.append('name', data.name);
+    formData.append('category', data.category);
+    formData.append('whatsappTemplate', data.whatsappTemplate);
+    formData.append('emailTemplate', JSON.stringify(data.emailTemplate));
+    if (data.description) {
+      formData.append('description', data.description);
+    }
+
+    const response = await axiosInstance.post<{ success: boolean; data: Catalog; message: string }>(
+      '/catalogs',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
     return response.data.data;
   },
 
@@ -148,7 +170,39 @@ const catalogAPI = {
 
   // Update a catalog
   updateCatalog: async (catalogId: string, data: UpdateCatalogInput): Promise<Catalog> => {
-    const response = await axiosInstance.put<{ success: boolean; data: Catalog; message: string }>(`/catalogs/${catalogId}`, data);
+    const formData = new FormData();
+
+    if (data.file) {
+      formData.append('file', data.file);
+    }
+    if (data.name !== undefined) {
+      formData.append('name', data.name);
+    }
+    if (data.description !== undefined) {
+      formData.append('description', data.description);
+    }
+    if (data.category !== undefined) {
+      formData.append('category', data.category);
+    }
+    if (data.whatsappTemplate !== undefined) {
+      formData.append('whatsappTemplate', data.whatsappTemplate);
+    }
+    if (data.emailTemplate !== undefined) {
+      formData.append('emailTemplate', JSON.stringify(data.emailTemplate));
+    }
+    if (data.isActive !== undefined) {
+      formData.append('isActive', String(data.isActive));
+    }
+
+    const response = await axiosInstance.put<{ success: boolean; data: Catalog; message: string }>(
+      `/catalogs/${catalogId}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
     return response.data.data;
   },
 
