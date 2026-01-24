@@ -33,6 +33,7 @@ export interface Exhibitor {
   phoneNumber?: string;
   role: string;
   companyName?: string;
+  address?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

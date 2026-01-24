@@ -1,13 +1,24 @@
-import { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/DashboardLayout';
-import ConfirmModal from '../../components/ConfirmModal';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { exhibitorAPI, type Exhibitor, type TopPerformer, type LicenseKey } from '../../api/exhibitor.api';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import DashboardLayout from "../../components/DashboardLayout";
+import ConfirmModal from "../../components/ConfirmModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  exhibitorAPI,
+  type Exhibitor,
+  type TopPerformer,
+  type LicenseKey,
+} from "../../api/exhibitor.api";
+import { Button } from "@/components/ui/button";
 
 const SuperAdminExhibitors = () => {
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -16,16 +27,20 @@ const SuperAdminExhibitors = () => {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [topPerformersLoading, setTopPerformersLoading] = useState(false);
   const [keysLoading, setKeysLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [exhibitors, setExhibitors] = useState<Exhibitor[]>([]);
   const [topPerformers, setTopPerformers] = useState<{
     mostEventsCreated: TopPerformer[];
     mostKeysCreated: TopPerformer[];
     mostLicenseKeyUsage: TopPerformer[];
   } | null>(null);
-  const [selectedExhibitor, setSelectedExhibitor] = useState<Exhibitor | null>(null);
-  const [exhibitorToDelete, setExhibitorToDelete] = useState<string | null>(null);
+  const [selectedExhibitor, setSelectedExhibitor] = useState<Exhibitor | null>(
+    null,
+  );
+  const [exhibitorToDelete, setExhibitorToDelete] = useState<string | null>(
+    null,
+  );
   const [exhibitorKeys, setExhibitorKeys] = useState<LicenseKey[]>([]);
   const [selectedExhibitorInfo, setSelectedExhibitorInfo] = useState<{
     firstName: string;
@@ -39,22 +54,23 @@ const SuperAdminExhibitors = () => {
     totalPages: 0,
   });
   const [formData, setFormData] = useState({
-    companyName: '',
-    contactName: '',
-    email: '',
-    phone: '',
-    password: '',
-    address: '',
+    companyName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    password: "",
+    address: "",
     maxLicenseKeys: 20,
     maxTotalActivations: 100,
   });
   const [editFormData, setEditFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    companyName: '',
-    password: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    companyName: "",
+    password: "",
+    address: "",
     isActive: true,
     maxLicenseKeys: 20,
     maxTotalActivations: 100,
@@ -64,11 +80,14 @@ const SuperAdminExhibitors = () => {
   const fetchExhibitors = async () => {
     try {
       setFetchLoading(true);
-      const response = await exhibitorAPI.getAll(pagination.page, pagination.limit);
+      const response = await exhibitorAPI.getAll(
+        pagination.page,
+        pagination.limit,
+      );
       setExhibitors(response.data.exhibitors);
       setPagination(response.data.pagination);
     } catch (err: any) {
-      setError(err.message || 'Failed to load exhibitors');
+      setError(err.message || "Failed to load exhibitors");
     } finally {
       setFetchLoading(false);
     }
@@ -85,23 +104,26 @@ const SuperAdminExhibitors = () => {
       const response = await exhibitorAPI.getTopPerformers();
       setTopPerformers(response.data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load top performers');
+      setError(err.message || "Failed to load top performers");
     } finally {
       setTopPerformersLoading(false);
     }
   };
 
   useEffect(() => {
-    if (activeTab === 'top-performers') {
+    if (activeTab === "top-performers") {
       fetchTopPerformers();
     }
   }, [activeTab]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
 
     // Convert number inputs to actual numbers
-    const parsedValue = type === 'number' ? (value === '' ? 0 : Number(value)) : value;
+    const parsedValue =
+      type === "number" ? (value === "" ? 0 : Number(value)) : value;
 
     setFormData({
       ...formData,
@@ -109,15 +131,17 @@ const SuperAdminExhibitors = () => {
     });
   };
 
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
 
     // Handle different input types
     let parsedValue: any = value;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       parsedValue = (e.target as HTMLInputElement).checked;
-    } else if (type === 'number') {
-      parsedValue = value === '' ? 0 : Number(value);
+    } else if (type === "number") {
+      parsedValue = value === "" ? 0 : Number(value);
     }
 
     setEditFormData({
@@ -131,10 +155,11 @@ const SuperAdminExhibitors = () => {
     setEditFormData({
       firstName: exhibitor.firstName,
       lastName: exhibitor.lastName,
-      email: exhibitor.email || '',
-      phoneNumber: exhibitor.phoneNumber || '',
-      companyName: exhibitor.companyName || '',
-      password: '',
+      email: exhibitor.email || "",
+      phoneNumber: exhibitor.phoneNumber || "",
+      companyName: exhibitor.companyName || "",
+      password: "",
+      address: exhibitor.address || "",
       isActive: exhibitor.isActive,
       maxLicenseKeys: exhibitor.maxLicenseKeys ?? 20,
       maxTotalActivations: exhibitor.maxTotalActivations ?? 100,
@@ -146,8 +171,8 @@ const SuperAdminExhibitors = () => {
     e.preventDefault();
     if (!selectedExhibitor) return;
 
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
@@ -157,6 +182,7 @@ const SuperAdminExhibitors = () => {
         email: editFormData.email || undefined,
         phoneNumber: editFormData.phoneNumber || undefined,
         companyName: editFormData.companyName || undefined,
+        address: editFormData.address || undefined,
         isActive: editFormData.isActive,
         maxLicenseKeys: editFormData.maxLicenseKeys,
         maxTotalActivations: editFormData.maxTotalActivations,
@@ -167,11 +193,11 @@ const SuperAdminExhibitors = () => {
       }
 
       await exhibitorAPI.update(selectedExhibitor._id, updateData);
-      setSuccess('Exhibitor updated successfully');
+      setSuccess("Exhibitor updated successfully");
       setShowEditModal(false);
       fetchExhibitors();
     } catch (err: any) {
-      setError(err.message || 'Failed to update exhibitor');
+      setError(err.message || "Failed to update exhibitor");
     } finally {
       setLoading(false);
     }
@@ -187,12 +213,12 @@ const SuperAdminExhibitors = () => {
 
     try {
       await exhibitorAPI.delete(exhibitorToDelete);
-      setSuccess('Exhibitor deleted successfully');
+      setSuccess("Exhibitor deleted successfully");
       setShowDeleteModal(false);
       setExhibitorToDelete(null);
       fetchExhibitors();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete exhibitor');
+      setError(err.message || "Failed to delete exhibitor");
       setShowDeleteModal(false);
       setExhibitorToDelete(null);
     }
@@ -217,41 +243,50 @@ const SuperAdminExhibitors = () => {
       const response = await exhibitorAPI.getExhibitorKeys(exhibitor._id);
       setExhibitorKeys(response.data.keys);
     } catch (err: any) {
-      setError(err.message || 'Failed to load exhibitor keys');
+      setError(err.message || "Failed to load exhibitor keys");
     } finally {
       setKeysLoading(false);
     }
   };
 
   // Only SUPERADMIN can change payment status
-  const handlePaymentStatusChange = async (key: LicenseKey, newStatus: "pending" | "completed") => {
+  const handlePaymentStatusChange = async (
+    key: LicenseKey,
+    newStatus: "pending" | "completed",
+  ) => {
     try {
-      setError('');
-      await exhibitorAPI.updateKeyPaymentStatus(key.eventId, key._id, newStatus);
+      setError("");
+      await exhibitorAPI.updateKeyPaymentStatus(
+        key.eventId,
+        key._id,
+        newStatus,
+      );
 
       // Update local state
-      setExhibitorKeys(exhibitorKeys.map(k =>
-        k._id === key._id ? { ...k, paymentStatus: newStatus } : k
-      ));
+      setExhibitorKeys(
+        exhibitorKeys.map((k) =>
+          k._id === key._id ? { ...k, paymentStatus: newStatus } : k,
+        ),
+      );
 
       setSuccess(`Payment status updated to ${newStatus}`);
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to update payment status');
+      setError(err.message || "Failed to update payment status");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
       // Split contactName into firstName and lastName
-      const nameParts = formData.contactName.trim().split(' ');
+      const nameParts = formData.contactName.trim().split(" ");
       const firstName = nameParts[0];
-      const lastName = nameParts.slice(1).join(' ') || nameParts[0];
+      const lastName = nameParts.slice(1).join(" ") || nameParts[0];
 
       const exhibitorData = {
         firstName,
@@ -266,16 +301,21 @@ const SuperAdminExhibitors = () => {
       };
 
       const response = await exhibitorAPI.create(exhibitorData);
-      
-      setSuccess(response.message + (response.temporaryPassword ? ` Temporary Password: ${response.temporaryPassword}` : ''));
+
+      setSuccess(
+        response.message +
+          (response.temporaryPassword
+            ? ` Temporary Password: ${response.temporaryPassword}`
+            : ""),
+      );
       setShowForm(false);
       setFormData({
-        companyName: '',
-        contactName: '',
-        email: '',
-        phone: '',
-        password: '',
-        address: '',
+        companyName: "",
+        contactName: "",
+        email: "",
+        phone: "",
+        password: "",
+        address: "",
         maxLicenseKeys: 20,
         maxTotalActivations: 100,
       });
@@ -283,7 +323,7 @@ const SuperAdminExhibitors = () => {
       // Refresh exhibitors list
       fetchExhibitors();
     } catch (err: any) {
-      setError(err.message || 'Failed to create exhibitor');
+      setError(err.message || "Failed to create exhibitor");
     } finally {
       setLoading(false);
     }
@@ -307,19 +347,31 @@ const SuperAdminExhibitors = () => {
         {/* Header */}
         <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Organisers</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Organisers
+            </h1>
             <p className="text-gray-600 mt-1">Manage all Organisers accounts</p>
           </div>
-          {activeTab === 'all' && (
+          {activeTab === "all" && (
             <Button
               type="button"
               onClick={() => setShowForm(!showForm)}
               className="bg-[#854AE6] hover:bg-[#7340CC] text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
-              {showForm ? 'Cancel' : 'Add Organisers'}
+              {showForm ? "Cancel" : "Add Organisers"}
             </Button>
           )}
         </div>
@@ -333,312 +385,442 @@ const SuperAdminExhibitors = () => {
 
           {/* All Exhibitors Tab */}
           <TabsContent value="all" className="space-y-6">
-        {/* Create Exhibitor Form */}
-        {showForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 lg:mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Create New Organisers</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="companyName"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="Enter company name"
-                  />
-                </div>
+            {/* Create Exhibitor Form */}
+            {showForm && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 lg:mb-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Create New Organisers
+                </h2>
+                <form onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label
+                        htmlFor="companyName"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Company Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="companyName"
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Enter company name"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Contact Person Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="contactName"
-                    name="contactName"
-                    value={formData.contactName}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="Enter contact person name"
-                  />
-                </div>
+                    <div>
+                      <label
+                        htmlFor="contactName"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Contact Person Name{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="contactName"
+                        name="contactName"
+                        value={formData.contactName}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Enter contact person name"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="Organisers@example.com"
-                  />
-                </div>
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Organisers@example.com"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="+1 234 567 8900"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Either email or phone is required</p>
-                </div>
+                    <div>
+                      <label
+                        htmlFor="phone"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="+1 234 567 8900"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Either email or phone is required
+                      </p>
+                    </div>
 
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    minLength={6}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="Minimum 6 characters"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Leave empty to auto-generate</p>
-                </div>
+                    <div>
+                      <label
+                        htmlFor="password"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        minLength={6}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Minimum 6 characters"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Leave empty to auto-generate
+                      </p>
+                    </div>
 
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="Enter address"
-                  />
-                </div>
+                    <div>
+                      <label
+                        htmlFor="address"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Address
+                      </label>
+                      <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Enter address"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="maxLicenseKeys" className="block text-sm font-medium text-gray-700 mb-2">
-                    Max License Keys
-                  </label>
-                  <input
-                    type="number"
-                    id="maxLicenseKeys"
-                    name="maxLicenseKeys"
-                    value={formData.maxLicenseKeys}
-                    onChange={handleInputChange}
-                    min="0"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="Default: 20"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Maximum number of license keys allowed</p>
-                </div>
+                    <div>
+                      <label
+                        htmlFor="maxLicenseKeys"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Max License Keys
+                      </label>
+                      <input
+                        type="number"
+                        id="maxLicenseKeys"
+                        name="maxLicenseKeys"
+                        value={formData.maxLicenseKeys}
+                        onChange={handleInputChange}
+                        min="0"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Default: 20"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maximum number of license keys allowed
+                      </p>
+                    </div>
 
-                <div>
-                  <label htmlFor="maxTotalActivations" className="block text-sm font-medium text-gray-700 mb-2">
-                    Max Total Activations
-                  </label>
-                  <input
-                    type="number"
-                    id="maxTotalActivations"
-                    name="maxTotalActivations"
-                    value={formData.maxTotalActivations}
-                    onChange={handleInputChange}
-                    min="0"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
-                    placeholder="Default: 100"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Maximum total activations across all keys</p>
-                </div>
+                    <div>
+                      <label
+                        htmlFor="maxTotalActivations"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Max Total Activations
+                      </label>
+                      <input
+                        type="number"
+                        id="maxTotalActivations"
+                        name="maxTotalActivations"
+                        value={formData.maxTotalActivations}
+                        onChange={handleInputChange}
+                        min="0"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Default: 100"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maximum total activations across all keys
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-6 justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowForm(false)}
+                      className="px-6"
+                      disabled={loading}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="px-6 bg-[#854AE6] hover:bg-[#7340CC] text-white"
+                      disabled={loading}
+                    >
+                      {loading ? "Creating..." : "Create Organisers"}
+                    </Button>
+                  </div>
+                </form>
               </div>
+            )}
 
-              <div className="flex gap-3 mt-6 justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowForm(false)}
-                  className="px-6"
-                  disabled={loading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="px-6 bg-[#854AE6] hover:bg-[#7340CC] text-white"
-                  disabled={loading}
-                >
-                  {loading ? 'Creating...' : 'Create Organisers'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Exhibitors Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Events</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keys</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keys Usage</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activations</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {fetchLoading ? (
-                  <tr>
-                    <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
-                      Loading Organisers...
-                    </td>
-                  </tr>
-                ) : exhibitors.length === 0 ? (
-                  <tr>
-                    <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
-                      No Organisers found
-                    </td>
-                  </tr>
-                ) : (
-                  exhibitors.map((exhibitor) => (
-                    <tr key={exhibitor._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{exhibitor.firstName} {exhibitor.lastName}</div>
-                        {exhibitor.companyName && <div className="text-xs text-gray-500">{exhibitor.companyName}</div>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{exhibitor.email || '-'}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{exhibitor.phoneNumber || '-'}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{exhibitor.eventCount || 0}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">{exhibitor.keyCount || 0}</span>
-                          {exhibitor.keyCount && exhibitor.keyCount > 0 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleViewKeys(exhibitor)}
-                              className="text-[#854AE6] hover:text-[#7340CC] hover:bg-[#854AE6]/10"
-                              title="View Keys"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {exhibitor.maxLicenseKeys !== undefined ? (
-                            <span className={`${
-                              (exhibitor.currentLicenseKeyCount || 0) >= exhibitor.maxLicenseKeys
-                                ? 'text-red-600'
-                                : (exhibitor.currentLicenseKeyCount || 0) / exhibitor.maxLicenseKeys >= 0.75
-                                ? 'text-yellow-600'
-                                : 'text-green-600'
-                            }`}>
-                              {exhibitor.currentLicenseKeyCount || 0} / {exhibitor.maxLicenseKeys}
-                            </span>
-                          ) : (
-                            <span className="text-blue-600">Unlimited</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {exhibitor.maxTotalActivations !== undefined ? (
-                            <span className={`${
-                              (exhibitor.currentTotalActivations || 0) >= exhibitor.maxTotalActivations
-                                ? 'text-red-600'
-                                : (exhibitor.currentTotalActivations || 0) / exhibitor.maxTotalActivations >= 0.75
-                                ? 'text-yellow-600'
-                                : 'text-green-600'
-                            }`}>
-                              {exhibitor.currentTotalActivations || 0} / {exhibitor.maxTotalActivations}
-                            </span>
-                          ) : (
-                            <span className="text-blue-600">Unlimited</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          exhibitor.isActive
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {exhibitor.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{new Date(exhibitor.createdAt).toLocaleDateString()}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(exhibitor)}
-                            className="text-[#854AE6] hover:text-[#7340CC] hover:bg-[#854AE6]/10"
-                            title="Edit"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </Button>
-                          <Button 
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteClick(exhibitor._id)}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                            title="Delete"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </Button>
-                        </div>
-                      </td>
+            {/* Exhibitors Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Company
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Phone
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Events
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Keys
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Keys Usage
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Activations
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {fetchLoading ? (
+                      <tr>
+                        <td
+                          colSpan={10}
+                          className="px-6 py-8 text-center text-gray-500"
+                        >
+                          Loading Organisers...
+                        </td>
+                      </tr>
+                    ) : exhibitors.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={10}
+                          className="px-6 py-8 text-center text-gray-500"
+                        >
+                          No Organisers found
+                        </td>
+                      </tr>
+                    ) : (
+                      exhibitors.map((exhibitor) => (
+                        <tr key={exhibitor._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {exhibitor.firstName} {exhibitor.lastName}
+                            </div>
+                            {exhibitor.companyName && (
+                              <div className="text-xs text-gray-500">
+                                {exhibitor.companyName}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {exhibitor.email || "-"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {exhibitor.phoneNumber || "-"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {exhibitor.eventCount || 0}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-600">
+                                {exhibitor.keyCount || 0}
+                              </span>
+                              {exhibitor.keyCount && exhibitor.keyCount > 0 && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleViewKeys(exhibitor)}
+                                  className="text-[#854AE6] hover:text-[#7340CC] hover:bg-[#854AE6]/10"
+                                  title="View Keys"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                    />
+                                  </svg>
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {exhibitor.maxLicenseKeys !== undefined ? (
+                                <span
+                                  className={`${
+                                    (exhibitor.currentLicenseKeyCount || 0) >=
+                                    exhibitor.maxLicenseKeys
+                                      ? "text-red-600"
+                                      : (exhibitor.currentLicenseKeyCount ||
+                                            0) /
+                                            exhibitor.maxLicenseKeys >=
+                                          0.75
+                                        ? "text-yellow-600"
+                                        : "text-green-600"
+                                  }`}
+                                >
+                                  {exhibitor.currentLicenseKeyCount || 0} /{" "}
+                                  {exhibitor.maxLicenseKeys}
+                                </span>
+                              ) : (
+                                <span className="text-blue-600">Unlimited</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {exhibitor.maxTotalActivations !== undefined ? (
+                                <span
+                                  className={`${
+                                    (exhibitor.currentTotalActivations || 0) >=
+                                    exhibitor.maxTotalActivations
+                                      ? "text-red-600"
+                                      : (exhibitor.currentTotalActivations ||
+                                            0) /
+                                            exhibitor.maxTotalActivations >=
+                                          0.75
+                                        ? "text-yellow-600"
+                                        : "text-green-600"
+                                  }`}
+                                >
+                                  {exhibitor.currentTotalActivations || 0} /{" "}
+                                  {exhibitor.maxTotalActivations}
+                                </span>
+                              ) : (
+                                <span className="text-blue-600">Unlimited</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                exhibitor.isActive
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              {exhibitor.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {new Date(
+                                exhibitor.createdAt,
+                              ).toLocaleDateString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(exhibitor)}
+                                className="text-[#854AE6] hover:text-[#7340CC] hover:bg-[#854AE6]/10"
+                                title="Edit"
+                              >
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteClick(exhibitor._id)}
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                title="Delete"
+                              >
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Top Performers Tab */}
@@ -653,7 +835,9 @@ const SuperAdminExhibitors = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Most Events Created</CardTitle>
-                    <CardDescription>Top Organisers by number of events created</CardDescription>
+                    <CardDescription>
+                      Top Organisers by number of events created
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {topPerformers.mostEventsCreated.length === 0 ? (
@@ -661,45 +845,60 @@ const SuperAdminExhibitors = () => {
                         No Organisers have created events yet
                       </div>
                     ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead>
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organiser</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Events</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {topPerformers.mostEventsCreated.map((performer, index) => (
-                            <tr key={performer.userId} className="hover:bg-gray-50">
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#854AE6]/10 text-[#854AE6] font-bold">
-                                  {index + 1}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {performer.firstName} {performer.lastName}
-                                </div>
-                                {performer.email && (
-                                  <div className="text-xs text-gray-500">{performer.email}</div>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
-                                {performer.companyName || '-'}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                  {performer.eventCount}
-                                </span>
-                              </td>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Rank
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Organiser
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Company
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Events
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {topPerformers.mostEventsCreated.map(
+                              (performer, index) => (
+                                <tr
+                                  key={performer.userId}
+                                  className="hover:bg-gray-50"
+                                >
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#854AE6]/10 text-[#854AE6] font-bold">
+                                      {index + 1}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {performer.firstName} {performer.lastName}
+                                    </div>
+                                    {performer.email && (
+                                      <div className="text-xs text-gray-500">
+                                        {performer.email}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    {performer.companyName || "-"}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                      {performer.eventCount}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ),
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -708,7 +907,9 @@ const SuperAdminExhibitors = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Most License Keys Created</CardTitle>
-                    <CardDescription>Top Organisers by number of license keys generated</CardDescription>
+                    <CardDescription>
+                      Top Organisers by number of license keys generated
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {topPerformers.mostKeysCreated.length === 0 ? (
@@ -716,45 +917,60 @@ const SuperAdminExhibitors = () => {
                         No Organisers have created license keys yet
                       </div>
                     ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead>
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organiser</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keys</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {topPerformers.mostKeysCreated.map((performer, index) => (
-                            <tr key={performer.userId} className="hover:bg-gray-50">
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#854AE6]/10 text-[#854AE6] font-bold">
-                                  {index + 1}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {performer.firstName} {performer.lastName}
-                                </div>
-                                {performer.email && (
-                                  <div className="text-xs text-gray-500">{performer.email}</div>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
-                                {performer.companyName || '-'}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                  {performer.totalKeys}
-                                </span>
-                              </td>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Rank
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Organiser
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Company
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Keys
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {topPerformers.mostKeysCreated.map(
+                              (performer, index) => (
+                                <tr
+                                  key={performer.userId}
+                                  className="hover:bg-gray-50"
+                                >
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#854AE6]/10 text-[#854AE6] font-bold">
+                                      {index + 1}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {performer.firstName} {performer.lastName}
+                                    </div>
+                                    {performer.email && (
+                                      <div className="text-xs text-gray-500">
+                                        {performer.email}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    {performer.companyName || "-"}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                      {performer.totalKeys}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ),
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -763,7 +979,9 @@ const SuperAdminExhibitors = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Most License Key Usage</CardTitle>
-                    <CardDescription>Top Organisers by license key scans and usage</CardDescription>
+                    <CardDescription>
+                      Top Organisers by license key scans and usage
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {topPerformers.mostLicenseKeyUsage.length === 0 ? (
@@ -771,51 +989,68 @@ const SuperAdminExhibitors = () => {
                         No license keys have been used yet
                       </div>
                     ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead>
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organisers</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Used Keys</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Scans</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {topPerformers.mostLicenseKeyUsage.map((performer, index) => (
-                            <tr key={performer.userId} className="hover:bg-gray-50">
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#854AE6]/10 text-[#854AE6] font-bold">
-                                  {index + 1}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {performer.firstName} {performer.lastName}
-                                </div>
-                                {performer.email && (
-                                  <div className="text-xs text-gray-500">{performer.email}</div>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
-                                {performer.companyName || '-'}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                  {performer.usedKeysCount}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#854AE6]/10 text-[#5E2AB2]">
-                                  {performer.totalScans?.toLocaleString()}
-                                </span>
-                              </td>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Rank
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Organisers
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Company
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Used Keys
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                Total Scans
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {topPerformers.mostLicenseKeyUsage.map(
+                              (performer, index) => (
+                                <tr
+                                  key={performer.userId}
+                                  className="hover:bg-gray-50"
+                                >
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#854AE6]/10 text-[#854AE6] font-bold">
+                                      {index + 1}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {performer.firstName} {performer.lastName}
+                                    </div>
+                                    {performer.email && (
+                                      <div className="text-xs text-gray-500">
+                                        {performer.email}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    {performer.companyName || "-"}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                      {performer.usedKeysCount}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#854AE6]/10 text-[#5E2AB2]">
+                                      {performer.totalScans?.toLocaleString()}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ),
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -833,11 +1068,17 @@ const SuperAdminExhibitors = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Organisers</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Edit Organisers
+                </h2>
                 <form onSubmit={handleUpdateSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
                     <div>
-                      <label htmlFor="edit-firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-firstName"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         First Name <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -852,7 +1093,10 @@ const SuperAdminExhibitors = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="edit-lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-lastName"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Last Name <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -867,7 +1111,10 @@ const SuperAdminExhibitors = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="edit-companyName" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-companyName"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Company Name
                       </label>
                       <input
@@ -881,7 +1128,10 @@ const SuperAdminExhibitors = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="edit-email" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-email"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Email Address
                       </label>
                       <input
@@ -895,7 +1145,10 @@ const SuperAdminExhibitors = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="edit-phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-phoneNumber"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Phone Number
                       </label>
                       <input
@@ -909,7 +1162,10 @@ const SuperAdminExhibitors = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="edit-password" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-password"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         New Password
                       </label>
                       <input
@@ -925,7 +1181,10 @@ const SuperAdminExhibitors = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="edit-maxLicenseKeys" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-maxLicenseKeys"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Max License Keys
                       </label>
                       <input
@@ -937,11 +1196,16 @@ const SuperAdminExhibitors = () => {
                         min="0"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Maximum number of license keys allowed</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maximum number of license keys allowed
+                      </p>
                     </div>
 
                     <div>
-                      <label htmlFor="edit-maxTotalActivations" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="edit-maxTotalActivations"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Max Total Activations
                       </label>
                       <input
@@ -953,7 +1217,28 @@ const SuperAdminExhibitors = () => {
                         min="0"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Maximum total activations across all keys</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maximum total activations across all keys
+                      </p>
+                    </div>
+
+                     <div className="md:col-span-2">
+                      <label
+                        htmlFor="edit-address"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Address
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-address"
+                        name="address"
+                        value={editFormData.address}
+                        onChange={handleEditInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent outline-none transition"
+                        placeholder="Enter address"
+                        maxLength={300}
+                      />
                     </div>
 
                     <div className="md:col-span-2">
@@ -965,7 +1250,9 @@ const SuperAdminExhibitors = () => {
                           onChange={handleEditInputChange}
                           className="w-4 h-4 text-[#854AE6] border-gray-300 rounded focus:ring-[#854AE6]"
                         />
-                        <span className="text-sm font-medium text-gray-700">Active</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Active
+                        </span>
                       </label>
                     </div>
                   </div>
@@ -985,7 +1272,7 @@ const SuperAdminExhibitors = () => {
                       className="px-6 bg-[#854AE6] hover:bg-[#7340CC] text-white"
                       disabled={loading}
                     >
-                      {loading ? 'Updating...' : 'Update Organiser'}
+                      {loading ? "Updating..." : "Update Organiser"}
                     </Button>
                   </div>
                 </form>
@@ -1006,8 +1293,10 @@ const SuperAdminExhibitors = () => {
                     </h2>
                     {selectedExhibitorInfo && (
                       <p className="text-gray-600 mt-1">
-                        {selectedExhibitorInfo.firstName} {selectedExhibitorInfo.lastName}
-                        {selectedExhibitorInfo.companyName && ` - ${selectedExhibitorInfo.companyName}`}
+                        {selectedExhibitorInfo.firstName}{" "}
+                        {selectedExhibitorInfo.lastName}
+                        {selectedExhibitorInfo.companyName &&
+                          ` - ${selectedExhibitorInfo.companyName}`}
                       </p>
                     )}
                   </div>
@@ -1018,8 +1307,18 @@ const SuperAdminExhibitors = () => {
                     onClick={() => setShowKeysModal(false)}
                     className="text-gray-400 hover:text-gray-600"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </Button>
                 </div>
@@ -1033,8 +1332,18 @@ const SuperAdminExhibitors = () => {
                   </div>
                 ) : exhibitorKeys.length === 0 ? (
                   <div className="text-center py-12">
-                    <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    <svg
+                      className="w-16 h-16 mx-auto text-gray-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                      />
                     </svg>
                     <p className="text-gray-600 mt-4">No license keys found</p>
                   </div>
@@ -1043,21 +1352,39 @@ const SuperAdminExhibitors = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Key</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stall</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Event
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            License Key
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Stall
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Usage
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Expires
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Payment
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {exhibitorKeys.map((key) => (
                           <tr key={key._id} className="hover:bg-gray-50">
                             <td className="px-4 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">{key.eventName}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {key.eventName}
+                              </div>
                             </td>
                             <td className="px-4 py-4">
                               <code className="text-xs bg-[#854AE6]/10 text-[#6F3EC2] px-2 py-1 rounded">
@@ -1065,10 +1392,14 @@ const SuperAdminExhibitors = () => {
                               </code>
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-600">{key.stallName || '-'}</div>
+                              <div className="text-sm text-gray-600">
+                                {key.stallName || "-"}
+                              </div>
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-600">{key.email}</div>
+                              <div className="text-sm text-gray-600">
+                                {key.email}
+                              </div>
                             </td>
                             <td className="px-4 py-4">
                               <div className="flex flex-col gap-1">
@@ -1084,12 +1415,14 @@ const SuperAdminExhibitors = () => {
                                   <div
                                     className={`h-2 rounded-full ${
                                       key.usagePercentage >= 100
-                                        ? 'bg-red-600'
+                                        ? "bg-red-600"
                                         : key.usagePercentage >= 75
-                                        ? 'bg-yellow-500'
-                                        : 'bg-green-500'
+                                          ? "bg-yellow-500"
+                                          : "bg-green-500"
                                     }`}
-                                    style={{ width: `${Math.min(key.usagePercentage, 100)}%` }}
+                                    style={{
+                                      width: `${Math.min(key.usagePercentage, 100)}%`,
+                                    }}
                                   ></div>
                                 </div>
                               </div>
@@ -1102,22 +1435,31 @@ const SuperAdminExhibitors = () => {
                             <td className="px-4 py-4 whitespace-nowrap">
                               <span
                                 className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  key.isActive && new Date(key.expiresAt) > new Date()
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-red-100 text-red-700'
+                                  key.isActive &&
+                                  new Date(key.expiresAt) > new Date()
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-700"
                                 }`}
                               >
-                                {key.isActive && new Date(key.expiresAt) > new Date() ? 'Active' : 'Expired'}
+                                {key.isActive &&
+                                new Date(key.expiresAt) > new Date()
+                                  ? "Active"
+                                  : "Expired"}
                               </span>
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap">
                               <select
                                 value={key.paymentStatus}
-                                onChange={(e) => handlePaymentStatusChange(key, e.target.value as "pending" | "completed")}
+                                onChange={(e) =>
+                                  handlePaymentStatusChange(
+                                    key,
+                                    e.target.value as "pending" | "completed",
+                                  )
+                                }
                                 className={`text-xs font-medium px-3 py-1 rounded-lg border-2 transition-colors cursor-pointer ${
-                                  key.paymentStatus === 'completed'
-                                    ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                                    : 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
+                                  key.paymentStatus === "completed"
+                                    ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                                    : "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
                                 }`}
                               >
                                 <option value="pending">Pending</option>
@@ -1135,7 +1477,10 @@ const SuperAdminExhibitors = () => {
               <div className="p-6 border-t border-gray-200 bg-gray-50">
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-gray-600">
-                    Total Keys: <span className="font-semibold">{exhibitorKeys.length}</span>
+                    Total Keys:{" "}
+                    <span className="font-semibold">
+                      {exhibitorKeys.length}
+                    </span>
                   </p>
                   <Button
                     type="button"
