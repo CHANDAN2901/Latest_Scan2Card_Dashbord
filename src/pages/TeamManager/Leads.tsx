@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../api/axios.config";
 import MultiInput from "@/components/ui/MultiInput";
+import leadApi from "../../api/lead.api";
 
 interface TeamMember {
   _id: string;
@@ -46,6 +47,7 @@ const TeamManagerLeads: React.FC = () => {
   });
   const [editedLead, setEditedLead] = useState<Lead | null>(null);
   const [saving, setSaving] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -172,6 +174,39 @@ const TeamManagerLeads: React.FC = () => {
     }
   };
 
+  // Export functions
+  const handleExportAllData = async () => {
+    try {
+      setExportLoading(true);
+      await leadApi.exportLeads({
+        type: 'all',
+        eventId: selectedEvent || undefined,
+        search: search || undefined,
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      alert('Failed to export leads data');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleExportEntryOnly = async () => {
+    try {
+      setExportLoading(true);
+      await leadApi.exportLeads({
+        type: 'entryOnly',
+        eventId: selectedEvent || undefined,
+        search: search || undefined,
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      alert('Failed to export entry codes');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -189,7 +224,28 @@ const TeamManagerLeads: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Team Leads</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Team Leads</h2>
+          <p className="text-gray-600 mt-1">View and manage all captured leads by your team</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={handleExportAllData}
+            disabled={exportLoading}
+            className="px-4 py-2 bg-[#854AE6] hover:bg-[#6F33C5] text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {exportLoading ? 'Exporting...' : 'Export with All Data'}
+          </button>
+          <button
+            onClick={handleExportEntryOnly}
+            disabled={exportLoading}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {exportLoading ? 'Exporting...' : 'Export Entry Key Only'}
+          </button>
+        </div>
+      </div>
       <div className="flex flex-wrap gap-4 mb-6 items-center">
         <select value={selectedMember} onChange={handleMemberChange} className="border p-2 rounded min-w-[200px]">
           <option value="">Filter by Team Member</option>
