@@ -1,5 +1,11 @@
 import axios from './axios.config';
 
+// Notes interface - supports text, audio, or both
+export interface LeadNotes {
+  text?: string;
+  audioUrl?: string;
+}
+
 export interface LeadDetails {
   firstName?: string;
   lastName?: string;
@@ -14,7 +20,7 @@ export interface LeadDetails {
   city?: string;
   zipcode?: string;
   country?: string;
-  notes?: string;
+  notes?: LeadNotes | string; // Can be object or legacy string
 }
 
 export interface Lead {

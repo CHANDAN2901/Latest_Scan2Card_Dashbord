@@ -666,8 +666,16 @@ const ExhibitorLeads = () => {
                       <h3 className="text-sm font-semibold text-gray-900 mb-3">Notes</h3>
                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {selectedLead.details.notes}
+                          {typeof selectedLead.details.notes === 'string'
+                            ? selectedLead.details.notes
+                            : selectedLead.details.notes?.text || ''}
                         </p>
+                        {/* Optionally render audio if present */}
+                        {typeof selectedLead.details.notes === 'object' && selectedLead.details.notes?.audioUrl && (
+                          <audio controls src={selectedLead.details.notes.audioUrl} className="mt-2 w-full">
+                            Your browser does not support the audio element.
+                          </audio>
+                        )}
                       </div>
                     </div>
                   )}

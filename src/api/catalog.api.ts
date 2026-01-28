@@ -15,6 +15,15 @@ export interface AssignedLicenseKey {
   licenseKey: string;
 }
 
+// Catalog file interface
+export interface CatalogFile {
+  docLink: string;
+  s3Key: string;
+  originalFileName: string;
+  fileSize?: number;
+  contentType?: string;
+}
+
 // Catalog interface
 export interface Catalog {
   _id: string;
@@ -22,11 +31,7 @@ export interface Catalog {
   name: string;
   description: string;
   category: CatalogCategory;
-  docLink: string;
-  s3Key: string;
-  originalFileName: string;
-  fileSize?: number;
-  contentType?: string;
+  files: CatalogFile[];
   whatsappTemplate: string;
   emailTemplate: EmailTemplate;
   assignedLicenseKeys: AssignedLicenseKey[];
@@ -41,7 +46,7 @@ export interface CreateCatalogInput {
   name: string;
   description?: string;
   category: CatalogCategory;
-  file: File;
+  files: File[];
   whatsappTemplate: string;
   emailTemplate: EmailTemplate;
 }
@@ -51,7 +56,8 @@ export interface UpdateCatalogInput {
   name?: string;
   description?: string;
   category?: CatalogCategory;
-  file?: File;
+  files?: File[];
+  existingFiles?: CatalogFile[];
   whatsappTemplate?: string;
   emailTemplate?: EmailTemplate;
   isActive?: boolean;
@@ -125,7 +131,10 @@ const catalogAPI = {
   // Create a new catalog
   createCatalog: async (data: CreateCatalogInput): Promise<Catalog> => {
     const formData = new FormData();
-    formData.append('file', data.file);
+    // Append multiple files
+    data.files.forEach((file) => {
+      formData.append('files', file);
+    });
     formData.append('name', data.name);
     formData.append('category', data.category);
     formData.append('whatsappTemplate', data.whatsappTemplate);
@@ -172,8 +181,15 @@ const catalogAPI = {
   updateCatalog: async (catalogId: string, data: UpdateCatalogInput): Promise<Catalog> => {
     const formData = new FormData();
 
-    if (data.file) {
-      formData.append('file', data.file);
+    // Append new files if any
+    if (data.files && data.files.length > 0) {
+      data.files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+    // Append existing files to keep
+    if (data.existingFiles !== undefined) {
+      formData.append('existingFiles', JSON.stringify(data.existingFiles));
     }
     if (data.name !== undefined) {
       formData.append('name', data.name);

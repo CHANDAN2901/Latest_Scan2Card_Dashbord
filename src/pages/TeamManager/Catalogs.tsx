@@ -5,6 +5,7 @@ import type {
   CatalogCategory,
   CategoryOption,
   AvailableLicenseKey,
+  CatalogFile,
 } from "../../api/catalog.api";
 import DashboardLayout from '../../components/DashboardLayout';
 
@@ -13,7 +14,8 @@ interface CatalogFormData {
   name: string;
   description: string;
   category: CatalogCategory;
-  file: File | null;
+  files: File[];
+  existingFiles: CatalogFile[];
   whatsappTemplate: string;
   emailTemplate: {
     subject: string;
@@ -66,7 +68,8 @@ const TeamManagerCatalogs: React.FC = () => {
     name: "",
     description: "",
     category: "product",
-    file: null,
+    files: [],
+    existingFiles: [],
     whatsappTemplate: "",
     emailTemplate: {
       subject: "",
@@ -133,7 +136,8 @@ const TeamManagerCatalogs: React.FC = () => {
       name: "",
       description: "",
       category: "product",
-      file: null,
+      files: [],
+      existingFiles: [],
       whatsappTemplate: "Hi {{leadName}},\n\nPlease find our catalog here: {{docLink}}\n\nBest regards",
       emailTemplate: {
         subject: "{{catalogName}} - Catalog from {{eventName}}",
@@ -152,7 +156,8 @@ const TeamManagerCatalogs: React.FC = () => {
       name: catalog.name,
       description: catalog.description,
       category: catalog.category,
-      file: null,
+      files: [],
+      existingFiles: catalog.files || [],
       whatsappTemplate: catalog.whatsappTemplate,
       emailTemplate: catalog.emailTemplate,
     });
@@ -211,8 +216,25 @@ const TeamManagerCatalogs: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setFormData((prev: CatalogFormData) => ({ ...prev, file }));
+    const newFiles = e.target.files ? Array.from(e.target.files) : [];
+    setFormData((prev: CatalogFormData) => ({
+      ...prev,
+      files: [...prev.files, ...newFiles]
+    }));
+  };
+
+  const removeNewFile = (index: number) => {
+    setFormData((prev: CatalogFormData) => ({
+      ...prev,
+      files: prev.files.filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeExistingFile = (index: number) => {
+    setFormData((prev: CatalogFormData) => ({
+      ...prev,
+      existingFiles: prev.existingFiles.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSave = async () => {
@@ -220,8 +242,12 @@ const TeamManagerCatalogs: React.FC = () => {
       alert("Name is required");
       return;
     }
-    if (drawer.mode === "create" && !formData.file) {
-      alert("Document file is required");
+    if (drawer.mode === "create" && formData.files.length === 0) {
+      alert("At least one document file is required");
+      return;
+    }
+    if (drawer.mode === "edit" && formData.files.length === 0 && formData.existingFiles.length === 0) {
+      alert("At least one document file is required");
       return;
     }
     if (!formData.whatsappTemplate.trim()) {
@@ -240,7 +266,7 @@ const TeamManagerCatalogs: React.FC = () => {
           name: formData.name,
           description: formData.description,
           category: formData.category,
-          file: formData.file!,
+          files: formData.files,
           whatsappTemplate: formData.whatsappTemplate,
           emailTemplate: formData.emailTemplate,
         });
@@ -249,7 +275,8 @@ const TeamManagerCatalogs: React.FC = () => {
           name: formData.name,
           description: formData.description,
           category: formData.category,
-          file: formData.file || undefined,
+          files: formData.files.length > 0 ? formData.files : undefined,
+          existingFiles: formData.existingFiles,
           whatsappTemplate: formData.whatsappTemplate,
           emailTemplate: formData.emailTemplate,
         });
@@ -553,17 +580,24 @@ const TeamManagerCatalogs: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                           </svg>
                         </button>
-                        <a
-                          href={catalog.docLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-600 hover:text-[#854AE6] hover:bg-gray-100 rounded-lg transition-colors"
-                          title="Open Document"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </a>
+                        {catalog.files && catalog.files.length > 0 && (
+                          <a
+                            href={catalog.files[0].docLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 text-gray-600 hover:text-[#854AE6] hover:bg-gray-100 rounded-lg transition-colors"
+                            title={`Open Document${catalog.files.length > 1 ? ` (${catalog.files.length} files)` : ''}`}
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            {catalog.files.length > 1 && (
+                              <span className="absolute -top-1 -right-1 bg-[#854AE6] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                                {catalog.files.length}
+                              </span>
+                            )}
+                          </a>
+                        )}
                         <button
                           onClick={() => handleDelete(catalog._id)}
                           disabled={deleting}
@@ -721,55 +755,116 @@ const TeamManagerCatalogs: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="col-span-2 space-y-2">
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                      Document File {drawer.mode === "create" ? "*" : "(Upload new to replace)"}
+                      Document Files {drawer.mode === "create" ? "*" : "(Add more or remove existing)"}
                     </label>
                     {drawer.mode === "view" ? (
-                      <div className="py-3 px-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <svg className="w-8 h-8 text-[#854AE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                          </svg>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-gray-900 font-medium truncate">{drawer.catalog?.originalFileName}</p>
-                            {drawer.catalog?.fileSize && (
-                              <p className="text-xs text-gray-500">
-                                {(drawer.catalog.fileSize / 1024).toFixed(1)} KB
-                              </p>
-                            )}
+                      <div className="space-y-2">
+                        {formData.existingFiles.map((file, index) => (
+                          <div key={index} className="py-3 px-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <svg className="w-8 h-8 text-[#854AE6] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                              </svg>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-gray-900 font-medium truncate">{file.originalFileName}</p>
+                                {file.fileSize && (
+                                  <p className="text-xs text-gray-500">
+                                    {(file.fileSize / 1024).toFixed(1)} KB
+                                  </p>
+                                )}
+                              </div>
+                              <a
+                                href={file.docLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 text-sm bg-[#854AE6] text-white rounded-lg hover:bg-[#6F33C5] transition-colors"
+                              >
+                                View
+                              </a>
+                            </div>
                           </div>
-                          <a
-                            href={drawer.catalog?.docLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1.5 text-sm bg-[#854AE6] text-white rounded-lg hover:bg-[#6F33C5] transition-colors"
-                          >
-                            View
-                          </a>
-                        </div>
+                        ))}
+                        {formData.existingFiles.length === 0 && (
+                          <p className="text-gray-500 text-sm py-3 px-4 bg-gray-50 rounded-lg">No files uploaded</p>
+                        )}
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
+                        {/* Existing files (for edit mode) */}
+                        {formData.existingFiles.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-gray-500">Existing Files:</p>
+                            {formData.existingFiles.map((file, index) => (
+                              <div key={`existing-${index}`} className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
+                                <svg className="w-5 h-5 text-[#854AE6] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <span className="flex-1 text-sm text-gray-700 truncate">{file.originalFileName}</span>
+                                {file.fileSize && (
+                                  <span className="text-xs text-gray-500">({(file.fileSize / 1024).toFixed(1)} KB)</span>
+                                )}
+                                <a
+                                  href={file.docLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[#854AE6] hover:text-[#6F33C5] text-sm"
+                                >
+                                  View
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={() => removeExistingFile(index)}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                  title="Remove file"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* New files to upload */}
+                        {formData.files.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-gray-500">New Files to Upload:</p>
+                            {formData.files.map((file, index) => (
+                              <div key={`new-${index}`} className="flex items-center gap-2 py-2 px-3 bg-green-50 rounded-lg border border-green-200">
+                                <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <span className="flex-1 text-sm text-gray-700 truncate">{file.name}</span>
+                                <span className="text-xs text-gray-500">({(file.size / 1024).toFixed(1)} KB)</span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeNewFile(index)}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                  title="Remove file"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* File input */}
                         <input
                           ref={fileInputRef}
                           type="file"
+                          multiple
                           onChange={handleFileChange}
                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.txt,.csv"
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#854AE6] focus:ring-2 focus:ring-[#854AE6]/10 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#854AE6] file:text-white hover:file:bg-[#6F33C5] file:cursor-pointer"
                         />
-                        {formData.file && (
-                          <p className="text-sm text-gray-600">
-                            Selected: {formData.file.name} ({(formData.file.size / 1024).toFixed(1)} KB)
-                          </p>
-                        )}
-                        {drawer.mode === "edit" && drawer.catalog && !formData.file && (
-                          <p className="text-sm text-gray-500">
-                            Current file: {drawer.catalog.originalFileName}
-                          </p>
-                        )}
                         <p className="text-xs text-gray-400">
-                          Supported: PDF, DOC, DOCX, XLS, XLSX, Images (max 10MB)
+                          Supported: PDF, DOC, DOCX, XLS, XLSX, Images (max 10MB per file, up to 10 files)
                         </p>
                       </div>
                     )}

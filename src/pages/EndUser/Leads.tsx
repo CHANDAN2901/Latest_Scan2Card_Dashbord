@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 import QRScanner from '../../components/QRScanner';
-import leadApi, { type Lead, type CreateLeadData, type UpdateLeadData } from '../../api/lead.api';
+import leadApi, { type Lead, type CreateLeadData, type UpdateLeadData, type LeadNotes } from '../../api/lead.api';
 import { Button } from '@/components/ui/button';
 import MultiInput from '@/components/ui/MultiInput';
 import rsvpApi, { type Rsvp } from '../../api/rsvp.api';
@@ -46,7 +46,7 @@ const EndUserLeads = () => {
       address: '',
       city: '',
       country: '',
-      notes: '',
+      notes: { text: '', audioUrl: '' },
     },
     rating: undefined,
     isIndependentLead: true,
@@ -55,6 +55,13 @@ const EndUserLeads = () => {
   const [scanImage, setScanImage] = useState<File | null>(null);
   // Store up to 2 extra images
   const [extraImages, setExtraImages] = useState<File[]>([]);
+
+  // Audio note states
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     fetchLeads();
@@ -100,6 +107,12 @@ const EndUserLeads = () => {
       extraImages.forEach((file) => {
         fd.append('images', file);
       });
+
+      // Add audio file if present
+      if (audioFile) {
+        fd.append('noteAudio', audioFile);
+      }
+
       fd.append('details', JSON.stringify(formData.details));
       if (formData.eventId) fd.append('eventId', formData.eventId);
       if (formData.rating !== undefined) fd.append('rating', String(formData.rating));
@@ -337,6 +350,83 @@ const EndUserLeads = () => {
     }
   };
 
+  // Audio recording handlers
+  const startAudioRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const file = new File([audioBlob], 'voice-note.webm', { type: 'audio/webm' });
+        setAudioFile(file);
+        setAudioUrl(URL.createObjectURL(audioBlob));
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting audio recording:', error);
+      toast.error('Could not access microphone. Please check permissions.');
+    }
+  };
+
+  const stopAudioRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['audio/mpeg', 'audio/mp4', 'audio/mp3', 'audio/m4a', 'audio/webm'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please upload a valid audio file (MP3 or M4A)');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Audio file must be less than 10MB');
+      return;
+    }
+
+    setAudioFile(file);
+    setAudioUrl(URL.createObjectURL(file));
+  };
+
+  const removeAudioNote = () => {
+    setAudioFile(null);
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
+  };
+
+  // Helper to get notes text
+  const getNotesText = (notes: LeadNotes | string | undefined): string => {
+    if (!notes) return '';
+    if (typeof notes === 'string') return notes;
+    return notes.text || '';
+  };
+
+  // Helper to get notes audio URL
+  const getNotesAudioUrl = (notes: LeadNotes | string | undefined): string => {
+    if (!notes || typeof notes === 'string') return '';
+    return notes.audioUrl || '';
+  };
+
   const resetForm = () => {
     setFormData({
       leadType: 'manual',
@@ -357,7 +447,7 @@ const EndUserLeads = () => {
         address: '',
         city: '',
         country: '',
-        notes: '',
+        notes: { text: '', audioUrl: '' },
       },
       rating: undefined,
       isIndependentLead: true,
@@ -368,19 +458,36 @@ const EndUserLeads = () => {
     setScanError(null);
     setConfidence(null);
     stopCamera();
+    // Reset audio
+    removeAudioNote();
   };
 
   const openEditModal = (lead: Lead) => {
     setSelectedLead(lead);
+    // Ensure notes is in the correct format
+    const leadDetails = lead.details ? {
+      ...lead.details,
+      notes: typeof lead.details.notes === 'string'
+        ? { text: lead.details.notes, audioUrl: '' }
+        : lead.details.notes || { text: '', audioUrl: '' }
+    } : undefined;
+
     setFormData({
       scannedCardImage: lead.scannedCardImage || '',
       images: lead.images || (lead.scannedCardImage ? [lead.scannedCardImage] : []),
       ocrText: lead.ocrText || '',
       entryCode: lead.entryCode || '',
-      details: lead.details,
+      details: leadDetails,
       rating: lead.rating,
       isIndependentLead: lead.isIndependentLead,
     });
+
+    // If lead has an existing audio note, set the URL for playback
+    const existingAudioUrl = getNotesAudioUrl(lead.details?.notes);
+    if (existingAudioUrl) {
+      setAudioUrl(existingAudioUrl);
+    }
+
     setShowEditModal(true);
   };
 
@@ -466,6 +573,7 @@ const EndUserLeads = () => {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rating</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Notes</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Entry Code</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Event</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
@@ -499,6 +607,30 @@ const EndUserLeads = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">{getRatingStars(lead.rating)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {/* Text note indicator */}
+                          {getNotesText(lead.details?.notes) && (
+                            <span title={getNotesText(lead.details?.notes)} className="text-gray-500">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </span>
+                          )}
+                          {/* Audio note indicator */}
+                          {getNotesAudioUrl(lead.details?.notes) && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200" title="Has voice note">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                              </svg>
+                              Audio
+                            </span>
+                          )}
+                          {!getNotesText(lead.details?.notes) && !getNotesAudioUrl(lead.details?.notes) && (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4">
                         {lead.entryCode ? (
                           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#F4ECFF] text-[#5E2AB2] border border-[#E3D4FF] font-mono">
@@ -971,14 +1103,105 @@ const EndUserLeads = () => {
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                {/* Notes Section with Text and Audio */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">Notes</label>
+
+                  {/* Text Notes */}
                   <textarea
-                    value={formData.details?.notes || ''}
-                    onChange={(e) => setFormData({ ...formData, details: { ...formData.details!, notes: e.target.value } })}
+                    value={getNotesText(formData.details?.notes)}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      details: {
+                        ...formData.details!,
+                        notes: {
+                          text: e.target.value,
+                          audioUrl: getNotesAudioUrl(formData.details?.notes)
+                        }
+                      }
+                    })}
                     rows={3}
+                    placeholder="Add text notes about this lead..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#854AE6] focus:border-transparent"
                   />
+
+                  {/* Audio Notes */}
+                  <div className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                      </svg>
+                      <span className="text-sm font-medium text-purple-900">Voice Note</span>
+                    </div>
+
+                    {/* Show existing audio from lead or new recording */}
+                    {(audioUrl || getNotesAudioUrl(formData.details?.notes)) ? (
+                      <div className="flex items-center gap-3">
+                        <audio
+                          controls
+                          src={audioUrl || getNotesAudioUrl(formData.details?.notes)}
+                          className="flex-1 h-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={removeAudioNote}
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {isRecording ? (
+                          <Button
+                            type="button"
+                            onClick={stopAudioRecording}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                          >
+                            <svg className="w-4 h-4 mr-1 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="6" />
+                            </svg>
+                            Stop Recording
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={startAudioRecording}
+                              className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                            >
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                              </svg>
+                              Record
+                            </Button>
+                            <span className="text-gray-400">or</span>
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                accept="audio/mpeg,audio/mp4,audio/mp3,audio/m4a,audio/webm"
+                                onChange={handleAudioFileUpload}
+                                className="hidden"
+                              />
+                              <span className="inline-flex items-center px-3 py-1.5 text-sm border border-purple-300 text-purple-700 rounded-md hover:bg-purple-50">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                Upload
+                              </span>
+                            </label>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-xs text-purple-600 mt-2">Supported: MP3, M4A (max 10MB)</p>
+                  </div>
                 </div>
 
                 {showCreateModal && (
